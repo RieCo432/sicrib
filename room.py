@@ -5,6 +5,7 @@ import color_helper
 from circular_list import CircularList
 import six
 from random import randint
+import pickle
 
 
 class Room:
@@ -21,6 +22,7 @@ class Room:
                              s315.length])
 
         self.leds_hsv_colors = [(0, 0, 0)] * self.num_leds
+        self.leds_rgb_colors = [(0, 0, 0)] * self.num_leds
 
         self.brightness = 1.0
 
@@ -154,20 +156,28 @@ class Room:
         #else:
             #print(self.leds)
 
+    def write_state(self):
+        pickle.dump(self.leds_rgb_colors, open("leds_state.p", "wb"))
+
+    def read_state(self):
+        self.leds_rgb_colors = pickle.load(open("leds_state.p", "rb"))
+
     def set_led_rgb(self, led_num, color):
         self.leds_hsv_colors[led_num] = color_helper.rgb_to_hsv(color)
-        if six.PY3 or self.demo:
-            self.leds[led_num] = color
-        elif six.PY2:
-            self.leds.set_pixel_rgb(led_num, color[0], color[1], color[2])
+        self.leds_rgb_colors[led_num] = color
+        # if six.PY3 or self.demo:
+        #     self.leds[led_num] = color
+        # elif six.PY2:
+        #     self.leds.set_pixel_rgb(led_num, color[0], color[1], color[2])
 
     def set_led_hsv(self, led_num, color):
         self.leds_hsv_colors[led_num] = color
-        color_rgb = color_helper.hsv_to_rgb(color[0], color[1], color[2])
-        if six.PY3 or self.demo:
-            self.leds[led_num] = color_rgb
-        elif six.PY2:
-            self.leds.set_pixel_rgb(led_num, color_rgb[0], color_rgb[1], color_rgb[2])
+        self.leds_rgb_colors[led_num] = color_helper.hsv_to_rgb(color[0], color[1], color[2])
+        # color_rgb = color_helper.hsv_to_rgb(color[0], color[1], color[2])
+        # if six.PY3 or self.demo:
+        #     self.leds[led_num] = color_rgb
+        # elif six.PY2:
+        #     self.leds.set_pixel_rgb(led_num, color_rgb[0], color_rgb[1], color_rgb[2])
 
     def get_led_rgb(self, led_num):
 

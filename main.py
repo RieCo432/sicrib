@@ -26,7 +26,8 @@ while True:
     living_room.set_led_rgb(464, (0,0,0))
 
     update_time_start = datetime.now()
-    living_room.update()
+    living_room.write_state()
+    #living_room.update()
     print((datetime.now() - update_time_start).total_seconds(), "update time")
 
     # speed analysis
