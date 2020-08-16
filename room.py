@@ -200,9 +200,12 @@ class Room:
     def set_hue_span_color_cycle(self, list_of_leds, start_index=0, starting_hue=0.0, ending_hue=360.0, speed=60, compress=1, time_elapsed=0):
 
         total_elements = len(list_of_leds)
+        hue_diff = ending_hue - starting_hue
         total_degrees = (ending_hue - starting_hue) * compress
-        hue_diff_element = total_degrees / total_elements
         hue_shift_per_second = total_degrees / speed
+        hue_diff_element = total_degrees / total_elements
+        if ending_hue % 360 != starting_hue % 360:
+            hue_diff_element *= 2
 
         # find index of starting led in list and shift backwards so starting LED is at the beginning
         list_of_leds.shiftBackwardN(start_index)
@@ -212,7 +215,7 @@ class Room:
 
         for element_index in range(len(list_of_leds)):
             for led_num in list_of_leds[element_index]:
-                hue = (starting_hue + hue_diff_element * element_index + time_elapsed * hue_shift_per_second) % 360
+                hue = (starting_hue + hue_diff_element * element_index + time_elapsed * hue_shift_per_second) % int(hue_diff) + starting_hue
 
                 self.set_led_hsv(led_num, (hue, saturation, value))
 
