@@ -22,6 +22,8 @@ class Room:
 
         self.leds_hsv_colors = [(0, 0, 0)] * self.num_leds
 
+        self.brightness = 1.0
+
         # try importing the adafruit library and initialize strip. If it fails, demo mode will be used and the strip
         # is just a list of color tuples
         try:
@@ -159,12 +161,26 @@ class Room:
         elif six.PY2:
             self.leds.set_pixel_rgb(led_num, color[0], color[1], color[2])
 
+    def set_led_hsv(self, led_num, color):
+        self.leds_hsv_colors[led_num] = color
+        color_rgb = color_helper.hsv_to_rgb(color[0], color[1], color[2])
+        if six.PY3 or self.demo:
+            self.leds[led_num] = color_rgb
+        elif six.PY2:
+            self.leds.set_pixel_rgb(led_num, color_rgb[0], color_rgb[1], color_rgb[2])
+
     def get_led_rgb(self, led_num):
 
         if six.PY3 or self.demo:
             return self.leds[led_num]
         elif six.PY2:
             return self.leds.get_pixel_rgb(led_num)
+
+    def apply_brightness(self):
+        for led_num in range(self.num_leds):
+            color = (self.leds_hsv_colors[led_num][0], self.leds_hsv_colors[led_num][1], self.leds_hsv_colors[led_num][2] * self.brightness)
+            self.set_led_hsv(led_num, color)
+
 
 
     # # turn off hue lights
@@ -191,13 +207,14 @@ class Room:
         # find index of starting led in list and shift backwards so starting LED is at the beginning
         list_of_leds.shiftBackwardN(start_index)
 
+        saturation = 1.0
+        value = self.brightness
+
         for element_index in range(len(list_of_leds)):
             for led_num in list_of_leds[element_index]:
                 hue = (starting_hue + hue_diff_element * element_index + time_elapsed * hue_shift_per_second) % 360
-                saturation = 1.0
-                value = 1.0
 
-                self.set_led_rgb(led_num, color_helper.hsv_to_rgb(hue, saturation, value))
+                self.set_led_hsv(led_num, (hue, saturation, value))
 
     def christmas_animation(self, last_ceiling_stamp, last_vertical_stamp):
 
@@ -228,6 +245,8 @@ class Room:
                     offset = 2 * i
                     self.set_led_rgb(edge.leds[i], (255, max(0, min(255, offset + randint(-15, 15))), 0))
             last_vertical_stamp = datetime.now()
+
+        self.apply_brightness()
 
         return last_ceiling_stamp, last_vertical_stamp
 
