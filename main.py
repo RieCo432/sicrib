@@ -16,14 +16,18 @@ iter_duration_stamp = datetime.now()
 iter_counter = 0
 while True:
 
-    # time_elapsed = (datetime.now() - timestamp_start).total_seconds()
-    # living_room.set_hue_span_color_cycle(led_list_in_order, compress=4, speed=23, time_elapsed=time_elapsed)
+    time_elapsed = (datetime.now() - timestamp_start).total_seconds()
 
+    calc_time_start = datetime.now()
+    #living_room.set_hue_span_color_cycle(led_list_in_order, compress=4, speed=23, time_elapsed=time_elapsed)
     last_ceiling_stamp, last_vertical_stamp = living_room.christmas_animation(last_ceiling_stamp, last_vertical_stamp)
-
+    print((datetime.now() - calc_time_start).total_seconds(), "calc time")
 
     living_room.set_led_rgb(464, (0,0,0))
+
+    update_time_start = datetime.now()
     living_room.update()
+    print((datetime.now() - update_time_start).total_seconds(), "update time")
 
     # speed analysis
     if iter_counter == 99:
