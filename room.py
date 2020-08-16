@@ -40,7 +40,7 @@ class Room:
             self.demo = False
         except ImportError:
             print("running in demo mode")
-            time.sleep(3)
+            time.sleep(1)
             self.demo = True
             self.leds = [(0, 0, 0)] * self.num_leds
 
@@ -128,13 +128,32 @@ class Room:
 
         return list_of_leds
 
+    # build a list of lists of LEDs, enabling vertical upwards effect with or without horizontal elements
+    def build_list_vertical_straight(self, include_horizontal=True):
+        list_of_leds = CircularList()
+
+        for i in range(0, self.vertical_edges_up[0].length):
+            list_of_leds.append([self.vertical_edges_up[0].leds[i], self.vertical_edges_up[1].leds[i],
+                                self.vertical_edges_up[2].leds[i], self.vertical_edges_up[3].leds[i]])
+
+        if include_horizontal:
+            all_horizontal = []
+            for edge in self.ceiling_edges_clockwise:
+                for n in edge.leds:
+                    all_horizontal.append(n)
+
+            list_of_leds.append(all_horizontal)
+
+        return list_of_leds
+
     def update(self):
         if not self.demo:
             self.leds.show()
-        else:
-            print(self.leds)
+        #else:
+            #print(self.leds)
 
     def set_led_rgb(self, led_num, color):
+        self.leds_hsv_colors[led_num] = color_helper.rgb_to_hsv(color)
         if six.PY3 or self.demo:
             self.leds[led_num] = color
         elif six.PY2:
@@ -147,34 +166,7 @@ class Room:
         elif six.PY2:
             return self.leds.get_pixel_rgb(led_num)
 
-    # build a list of lists of LEDs, enabling vertical upwards effect with or without horizontal elements
-    def build_list_vertical_straight(self, include_horizontal=True):
-        list_of_leds = CircularList()
 
-        for i in range(0, self.vertical_edges_up[0].length):
-            list_of_leds.append([self.vertical_edges_up[0].leds[i], self.vertical_edges_up[1].leds[i],
-                                 self.vertical_edges_up[2].leds[i], self.vertical_edges_up[3].leds[i]])
-
-        if include_horizontal:
-            all_horizontal = []
-            for edge in self.ceiling_edges_clockwise:
-                for n in edge.leds:
-                    all_horizontal.append(n)
-
-            list_of_leds.append(all_horizontal)
-
-        return list_of_leds
-
-    # # turns all LEDs off
-    # def leds_off(self):
-    #     # fill the strip with black and update LEDs
-    #     if not self.demo:
-    #         if six.PY3:
-    #             self.leds.fill((0, 0, 0))
-    #         elif six.PY2:
-    #             self.leds.clear()
-    #         self.leds.show()
-    #
     # # turn off hue lights
     # def hue_off(self):
     #     if self.phue_setup_done:
@@ -205,168 +197,39 @@ class Room:
                 saturation = 1.0
                 value = 1.0
 
-                self.leds_hsv_colors[led_num] = (hue, saturation, value)
-                self.set_led_rgb(led_num, color_helper.hue_to_rgb(hue, saturation, value))
+                self.set_led_rgb(led_num, color_helper.hsv_to_rgb(hue, saturation, value))
 
+    def christmas_animation(self, last_ceiling_stamp, last_vertical_stamp):
 
+        ceiling_led_list = CircularList()
 
+        for edge in self.ceiling_edges_clockwise:
+            for led_number in edge.leds:
+                ceiling_led_list.append(led_number)
 
-    # start is the index where the starting hue is applied
-    # end is the index where starting hue completes a cycle
-    # cycles determines how many full rotations are done (for less than full rotation use 0)
-    # speed is how quickly the starting hue moves around in steps per second (1 step = 1 LED)
-    # starting hue determines which color is used at the main point, hue is in degrees (0 is red, 120 is green,
-    # 240 is green)
-    # def hue_span_color_cylce(self, list_of_leds, start_index=None, end_index=None, cycles=0, speed=10, starting_hue=0.0, ending_hue=360.0, compress=1):
-    #     # initialize a circular list to store led numbers that are involved
-    #
-    #     # if no starting point is given, select first led of first ceiling edge
-    #     if speed >= 0:
-    #         if start_index is None:
-    #             start_index = 0
-    #         if end_index is None:
-    #             end_index = -1
-    #
-    #     elif speed < 0:
-    #         if start_index is None:
-    #             start_index = -1
-    #         if end_index is None:
-    #             end_index = 0
-    #
-    #     start = list_of_leds[start_index]
-    #     end = list_of_leds[end_index]
-    #
-    #     # find index of starting led in list and shift backwards so starting LED is at the beginning
-    #     list_of_leds.shiftBackwardN(start_index)
-    #
-    #     # determine how much the hue needs to increase per LED/step
-    #     hue_increase_per_step = (ending_hue - starting_hue) * compress / len(list_of_leds)
-    #     if ending_hue % 360 != starting_hue % 360:
-    #         hue_increase_per_step *= 2
-    #
-    #     # initialize loop and counter variables
-    #     cycle = 0
-    #     stop = False
-    #     stamp = datetime.now()
-    #     theoretical_movement = 0
-    #     first_iter = True
-    #     rest = 0
-    #     while not stop:
-    #         # move animation if needed
-    #         actual_movement = 0
-    #         theoretical_movement = speed * (datetime.now() - stamp).total_seconds()
-    #         if theoretical_movement + rest >= 1:
-    #             actual_movement = int(math.floor(theoretical_movement + rest))
-    #             rest = theoretical_movement - actual_movement
-    #             list_of_leds.shiftBackwardN(actual_movement)
-    #         elif theoretical_movement - rest <= -1:
-    #             actual_movement = - int(math.ceil(theoretical_movement - rest))
-    #             rest = theoretical_movement - actual_movement
-    #             list_of_leds.shiftForwardN(actual_movement)
-    #
-    #         if actual_movement != 0 or first_iter:
-    #             if first_iter:
-    #                 first_iter = False
-    #
-    #             hue = starting_hue  # reset hue to starting hue
-    #             # for each entry in list, check if entry is a list
-    #             # if yes, set color to current hue for every LED number in list
-    #             # if not, set color of the specific LED to current hue
-    #             #
-    #             # then increase hue and modulo 360 it
-    #             for step in list_of_leds:
-    #                 for led_num in step:
-    #                     if six.PY3:
-    #                         self.leds[led_num] = color_helper.hue_to_rgb(math.floor((hue + 720) % 360))
-    #                     elif six.PY2:
-    #                         color_tuple = color_helper.hue_to_rgb(math.floor((hue + 720) % 360))
-    #                         self.leds.set_pixel(led_num, color_helper.RGB_to_color(color_tuple[0], color_tuple[1], color_tuple[2]))
-    #                 hue += hue_increase_per_step
-    #                 if starting_hue % 360 != ending_hue % 360:
-    #                     if hue >= ending_hue:
-    #                         rest = hue - ending_hue
-    #                         hue = ending_hue - rest
-    #                         hue_increase_per_step *= -1
-    #                     if hue <= starting_hue:
-    #                         rest = starting_hue - hue
-    #                         hue = starting_hue + rest
-    #                         hue_increase_per_step *= -1
-    #
-    #             # update physical LEDs
-    #             stamp = datetime.now()
-    #             if not self.demo:
-    #                 self.leds.show()
-    #             else:
-    #                 print(datetime.now(), list_of_leds._data)
-    #
-    #             if actual_movement >= 1:
-    #                 # if endpoint LED is inside next movement and desired number of cycles has been reached, stop loop
-    #                 if end in list_of_leds[0:actual_movement + 1] and cycle == cycles:
-    #                     stop = True
-    #
-    #                 # if endpoint LED is inside next movement, but number of cycles has not been reached yet,
-    #                 # increase cycle
-    #                 # counter
-    #                 if end in list_of_leds[0:actual_movement + 1]:
-    #                     cycle += 1
-    #             elif actual_movement <= -1:
-    #                 # if endpoint LED is inside next movement and desired number of cycles has been reached, stop loop
-    #                 if end in list_of_leds[-actual_movement:0] and cycle == cycles:
-    #                     stop = True
-    #
-    #                 # if endpoint LED is inside next movement, but number of cycles has not been reached yet,
-    #                 # increase cycle
-    #                 # counter
-    #                 if end in list_of_leds[-actual_movement:0]:
-    #                     cycle += 1
-    #
-    # def christmas_animation(self, duration=3600):
-    #
-    #     startTime = datetime.now()
-    #
-    #     ceiling_led_list = CircularList()
-    #
-    #     for edge in self.ceiling_edges_clockwise:
-    #         for led_number in edge.leds:
-    #             ceiling_led_list.append(led_number)
-    #
-    #     # print(ceiling_led_list._data)
-    #
-    #     last_ceiling_stamp = datetime.now()
-    #     last_vertical_stamp = datetime.now()
-    #     update_necessary = False
-    #
-    #     while (datetime.now() - startTime).total_seconds() <= duration:
-    #
-    #         if (datetime.now() - last_ceiling_stamp).total_seconds() >= 1:
-    #             for i in ceiling_led_list:
-    #                 color = (0, 0, 0)
-    #                 color_pick = randint(1, 10)
-    #                 if color_pick == 0:
-    #                     color = (0, 0, 255)
-    #                 elif 1 <= color_pick <= 6:
-    #                     color = (255, 0, 0)
-    #                 elif 7 <= color_pick <= 10:
-    #                     color = (0, 255, 0)
-    #                 self.set_led(i, color)
-    #
-    #             ceiling_led_list.shiftForward()
-    #             last_ceiling_stamp = datetime.now()
-    #             update_necessary = True
-    #
-    #         if (datetime.now() - last_vertical_stamp).total_seconds() >= 0.05:
-    #             for edge in self.vertical_edges_up:
-    #                 for i in range(edge.length):
-    #                     offset = 2*i
-    #                     self.set_led(edge.leds[i], (255, max(0, min(255, offset + randint(-15, 15))), 0))
-    #             last_vertical_stamp = datetime.now()
-    #             update_necessary = True
-    #
-    #         if update_necessary:
-    #             update_necessary = False
-    #             self.update()
-    #
-    #         time.sleep(0.1)
+        if (datetime.now() - last_ceiling_stamp).total_seconds() >= 1:
+            for i in ceiling_led_list:
+                color = (0, 0, 0)
+                color_pick = randint(1, 10)
+                if color_pick == 0:
+                    color = (0, 0, 255)
+                elif 1 <= color_pick <= 6:
+                    color = (255, 0, 0)
+                elif 7 <= color_pick <= 10:
+                    color = (0, 255, 0)
+                self.set_led_rgb(i, color)
+
+            ceiling_led_list.shiftForward()
+            last_ceiling_stamp = datetime.now()
+
+        if (datetime.now() - last_vertical_stamp).total_seconds() >= 0.05:
+            for edge in self.vertical_edges_up:
+                for i in range(edge.length):
+                    offset = 2 * i
+                    self.set_led_rgb(edge.leds[i], (255, max(0, min(255, offset + randint(-15, 15))), 0))
+            last_vertical_stamp = datetime.now()
+
+        return last_ceiling_stamp, last_vertical_stamp
 
 
 
