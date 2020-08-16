@@ -1,9 +1,9 @@
-def hue_to_rgb(H, S=1.0, B=1.0):
+def hsv_to_rgb(H, S=1.0, V=1.0):
     H %= 360
 
-    C = B * S
+    C = V * S
     X = C * (1 - abs((H / 60) % 2 - 1))
-    m = B - C
+    m = V - C
 
     _R = 0
     _G = 0
@@ -35,11 +35,33 @@ def hue_to_rgb(H, S=1.0, B=1.0):
     return R, G, B
 
 
-def rgb_to_hue(rgb):
+def rgb_to_hsv(rgb):
 
-    R = rgb[0]
-    G = rgb[1]
-    B = rgb[2]
+    R = rgb[0] / 255.0
+    G = rgb[1] / 255.0
+    B = rgb[2] / 255.0
+
+    cmax = max(R, G, B)
+    cmin = min(R, G, B)
+    diff = cmax - cmin
+
+    if cmax == cmin:
+        H = 0
+    elif cmax == R:
+        H = (60 * ((G - B) / diff) + 360) % 360
+    elif cmax == G:
+        H = (60 * ((B - R) / diff) + 120) % 360
+    elif cmax == B:
+        H = (60 * ((R - G) / diff) + 240) % 360
+
+    if cmax == 0:
+        S = 0
+    else:
+        S = diff / cmax
+
+    V = cmax
+
+    return H, S, V
 
 def RGB_to_color(r, g, b):
     """Convert three 8-bit red, green, blue component values to a single 24-bit
@@ -50,9 +72,9 @@ def RGB_to_color(r, g, b):
 
 if __name__ == "__main__":
 
-    print(hue_to_rgb(0))
-    print(hue_to_rgb(120))
-    print(hue_to_rgb(240))
-    print(hue_to_rgb(60))
-    print(hue_to_rgb(180))
-    print(hue_to_rgb(300))
+    print(hsv_to_rgb(0))
+    print(hsv_to_rgb(120))
+    print(hsv_to_rgb(240))
+    print(hsv_to_rgb(60))
+    print(hsv_to_rgb(180))
+    print(hsv_to_rgb(300))
