@@ -47,15 +47,14 @@ while True:
     else:
         for led_num in range(living_room.num_leds):
             living_room.set_led_rgb(led_num, (0, 0, 0))
-        time.sleep(1)
-        
+
     living_room.update()
 
     # speed analysis
     if iter_counter == 99:
-        print(int(100 / (datetime.now() - iter_duration_stamp).total_seconds()), "updates per second")
+        # print(int(100 / (datetime.now() - iter_duration_stamp).total_seconds()), "updates per second")
         fx_config = pickle.load(open("fx_config.p", "rb"))
         iter_counter = -1
         iter_duration_stamp = datetime.now()
 
-        iter_counter += 1
+    iter_counter += 1
