@@ -5,8 +5,8 @@ from datetime import datetime
 living_room = build_living_room()
 time.sleep(2)
 
-led_list_in_order = living_room.build_list_horizontal_circle()
-#led_list_in_order = living_room.build_list_vertical_straight()
+#led_list_in_order = living_room.build_list_horizontal_circle()
+led_list_in_order = living_room.build_list_vertical_straight()
 
 timestamp_start = datetime.now()
 while True:
