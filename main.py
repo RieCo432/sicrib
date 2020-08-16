@@ -1,6 +1,8 @@
+import pickle
 import time
 from config import build_living_room
 from datetime import datetime
+
 
 living_room = build_living_room()
 
@@ -9,31 +11,45 @@ led_list_in_order = living_room.build_list_vertical_straight()
 
 # setup hue span color cycle
 timestamp_start = datetime.now()
-
 # setup christmas animation
 last_ceiling_stamp = last_vertical_stamp = datetime.now()
 iter_duration_stamp = datetime.now()
+
 iter_counter = 0
 living_room.brightness = 1.0
+
+fx_config = pickle.load(open("fx_config.p", "rb"))
+
 while True:
 
-    time_elapsed = (datetime.now() - timestamp_start).total_seconds()
+    if fx_config["enabled"]:
 
-    #calc_time_start = datetime.now()
-    living_room.set_hue_span_color_cycle(led_list_in_order, compress=4, speed=23, time_elapsed=time_elapsed)
-    #last_ceiling_stamp, last_vertical_stamp = living_room.christmas_animation(last_ceiling_stamp, last_vertical_stamp)
-    #print((datetime.now() - calc_time_start).total_seconds(), "calc time")
+        if fx_config["effect"] == "hue_color_span":
+            time_elapsed = (datetime.now() - timestamp_start).total_seconds()
+            compress = fx_config["effect_params"]["compress"]
+            living_room.set_hue_span_color_cycle(led_list_in_order,
+                                                 start_index=fx_config["effect_params"]["start_index"],
+                                                 compress=fx_config["effect_params"]["compress"],
+                                                 speed=fx_config["effect_params"]["speed"],
+                                                 starting_hue=fx_config["effect_params"]["starting_hue"],
+                                                 ending_hue=fx_config["effect_params"]["ending_hue"],
+                                                 time_elapsed=time_elapsed)
 
-    living_room.set_led_rgb(464, (0,0,0))
+        elif fx_config["effect"] == "christmas_animation":
+            last_ceiling_stamp, last_vertical_stamp = living_room.christmas_animation(last_ceiling_stamp, last_vertical_stamp)
 
-    #update_time_start = datetime.now()
+
+
+
+
+        living_room.set_led_rgb(464, (0,0,0))
     living_room.update()
-    #print((datetime.now() - update_time_start).total_seconds(), "update time")
 
     # speed analysis
     if iter_counter == 99:
         print(int(100 / (datetime.now() - iter_duration_stamp).total_seconds()), "updates per second")
+        fx_config = pickle.load(open("fx_config.p", "rb"))
         iter_counter = -1
         iter_duration_stamp = datetime.now()
 
-    iter_counter += 1
+        iter_counter += 1
