@@ -16,7 +16,7 @@ fx_params = {"hue_color_span": {
                 "start_index": 0}
             }
 
-fx_config_path = os.path.join(os.getcwd(), os.pardir, "share", "fx_config.json")
+fx_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "fx_config.json")
 
 def get_current_fx_data():
     return json.load(open(fx_config_path, "r"))

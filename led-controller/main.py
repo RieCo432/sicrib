@@ -18,7 +18,7 @@ iter_duration_stamp = datetime.now()
 iter_counter = 0
 living_room.brightness = 1.0
 
-fx_config_path = os.path.join(os.getcwd(), os.pardir, "share", "fx_config.json")
+fx_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "fx_config.json")
 
 fx_config = json.load(open(fx_config_path, "r"))
 
