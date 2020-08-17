@@ -17,11 +17,11 @@ fx_params = {"hue_color_span": {
 
 
 def get_current_fx_data():
-    return json.load(open("../fx_config.json", "r"))
+    return json.load(open("../share/fx_config.json", "r"))
 
 
 def set_current_fx_data(fx_config):
-    json.dump(fx_config, open("../fx_config.json", "w"))
+    json.dump(fx_config, open("../share/fx_config.json", "w"))
 
 
 @app.route("/")
