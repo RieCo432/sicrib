@@ -1,4 +1,4 @@
-import pickle
+import json
 import time
 from config import build_living_room
 from datetime import datetime
@@ -18,7 +18,7 @@ iter_duration_stamp = datetime.now()
 iter_counter = 0
 living_room.brightness = 1.0
 
-fx_config = pickle.load(open("fx_config.p", "rb"))
+fx_config = json.load(open("fx_config.json", "r"))
 
 while True:
 
@@ -53,7 +53,7 @@ while True:
     # speed analysis
     if iter_counter == 99:
         # print(int(100 / (datetime.now() - iter_duration_stamp).total_seconds()), "updates per second")
-        fx_config = pickle.load(open("fx_config.p", "rb"))
+        fx_config = json.load(open("fx_config.json", "r"))
         iter_counter = -1
         iter_duration_stamp = datetime.now()
 

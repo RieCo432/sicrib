@@ -1,7 +1,7 @@
-import pickle
+import json
 
 configs = {
-    "enabled": False,
+    "enabled": True,
     "effect": "hue_color_span",
     "effect_params": {"start_index": 0,
                       "starting_hue": 120.0,
@@ -11,4 +11,4 @@ configs = {
     "addons": []
 }
 
-pickle.dump(configs, open("fx_config.p", "wb"))
+json.dump(configs, open("fx_config.json", "w"))
