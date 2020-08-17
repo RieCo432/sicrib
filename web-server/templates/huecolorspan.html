@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+     <h1>Set Hue Color Span</h1>
+     <form action="" method="post" novalidate>
+         {{ form.hidden_tag() }}
+         <p>
+             {{ form.start_index.label }}
+             {{ form.start_index() }}
+             {% for error in form.start_index.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
+         <p>
+              {{ form.starting_hue.label }}
+              {{ form.starting_hue() }}
+              {% for error in form.starting_hue.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
+         <p>
+              {{ form.ending_hue.label }}
+              {{ form.ending_hue() }}
+              {% for error in form.ending_hue.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
+         <p>
+              {{ form.speed.label }}
+              {{ form.speed() }}
+              {% for error in form.speed.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
+         <p>
+              {{ form.compress.label }}
+              {{ form.compress() }}
+              {% for error in form.compress.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
+         <p>{{ form.submit() }}</p>
+     </form>
+{% endblock %}
+
