@@ -1,6 +1,7 @@
 from flask import Flask, render_template, flash, redirect, url_for
 from forms import HueColorSpanForm
 import json
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'you-will-never-guess'
@@ -15,13 +16,14 @@ fx_params = {"hue_color_span": {
                 "start_index": 0}
             }
 
+fx_config_path = os.path.join(os.getcwd(), os.pardir, "share", "fx_config.json")
 
 def get_current_fx_data():
-    return json.load(open("../share/fx_config.json", "r"))
+    return json.load(open(fx_config_path, "r"))
 
 
 def set_current_fx_data(fx_config):
-    json.dump(fx_config, open("../share/fx_config.json", "w"))
+    json.dump(fx_config, open(fx_config_path, "w"))
 
 
 @app.route("/")

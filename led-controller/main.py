@@ -2,7 +2,7 @@ import json
 import time
 from config import build_living_room
 from datetime import datetime
-
+import os
 
 living_room = build_living_room()
 
@@ -18,7 +18,9 @@ iter_duration_stamp = datetime.now()
 iter_counter = 0
 living_room.brightness = 1.0
 
-fx_config = json.load(open("../share/fx_config.json", "r"))
+fx_config_path = os.path.join(os.getcwd(), os.pardir, "share", "fx_config.json")
+
+fx_config = json.load(open(fx_config_path, "r"))
 
 while True:
 
@@ -53,7 +55,7 @@ while True:
     # speed analysis
     if iter_counter == 99:
         # print(int(100 / (datetime.now() - iter_duration_stamp).total_seconds()), "updates per second")
-        fx_config = json.load(open("../share/fx_config.json", "r"))
+        fx_config = json.load(open(fx_config_path, "r"))
         iter_counter = -1
         iter_duration_stamp = datetime.now()
 
