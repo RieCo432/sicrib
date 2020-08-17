@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash, redirect
+from flask import Flask, render_template, flash, redirect, url_for
 from forms import HueColorSpanForm
 import json
 
@@ -15,17 +15,40 @@ fx_params = {"hue_color_span": {
                 "start_index": 0}
             }
 
+
+def get_current_fx_data():
+    return json.load(open("../fx_config.json", "r"))
+
+
+def set_current_fx_data(fx_config):
+    json.dump(fx_config, open("../fx_config.json", "w"))
+
+
 @app.route("/")
-#def main():
-#    return render_template("main.html", **templateData)
 @app.route("/index")
 def index():
-    templateData = json.load(open("../fx_config.json", "r"))
-    return render_template("index.html", **templateData)
+    return render_template("index.html", **get_current_fx_data())
+
+
+@app.route("/on")
+def on():
+    fx_config = get_current_fx_data()
+    fx_config["enabled"] = True
+    set_current_fx_data(fx_config)
+    return redirect(url_for('index'))
+
+
+@app.route("/off")
+def off():
+    fx_config = get_current_fx_data()
+    fx_config["enabled"] = False
+    set_current_fx_data(fx_config)
+    return redirect(url_for('index'))
+
 
 @app.route("/sethuecolorspan", methods=["GET", "POST"])
-def sethuecolorspan():
-    fx_config = json.load(open("../fx_config.json", "r"))
+def set_hue_color_span():
+    fx_config = get_current_fx_data()
     form = HueColorSpanForm()
     if form.validate_on_submit():
         flash("Effect parameters accepted")
@@ -35,13 +58,9 @@ def sethuecolorspan():
         fx_config["effect_params"]["ending_hue"] = float(form.ending_hue.data)
         fx_config["effect_params"]["speed"] = float(form.speed.data)
         fx_config["effect_params"]["compress"] = form.compress.data
-        print(form.start_index.data)
-        print(type(form.start_index.data))
-        print(type(fx_config["effect_params"]["start_index"]))
-        print(fx_config)
-        json.dump(fx_config, open("../fx_config.json", "w"))
+        set_current_fx_data(fx_config)
         print("data changed")
-        return redirect("/index")
+        return redirect(url_for('index'))
     else:
         form.start_index.data = fx_config["effect_params"]["start_index"]
         form.starting_hue.data = fx_config["effect_params"]["starting_hue"]
@@ -51,6 +70,14 @@ def sethuecolorspan():
 
         return render_template("huecolorspan.html", form=form)
 
-if __name__ == "__main__":
 
+@app.route("/setchristmasanimation")
+def set_christmas_animation():
+    fx_config = get_current_fx_data()
+    fx_config["effect"] = "christmas_animation"
+    set_current_fx_data(fx_config)
+    return redirect(url_for('index'))
+
+
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80, debug=True)
