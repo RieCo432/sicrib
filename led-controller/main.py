@@ -1,3 +1,5 @@
+#! /usr/bin/python2.7
+
 import json
 import time
 from config import build_living_room

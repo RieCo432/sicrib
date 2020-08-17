@@ -1,3 +1,5 @@
+#! /usr/bin/python
+
 from flask import Flask, render_template, flash, redirect, url_for
 from forms import HueColorSpanForm
 import json
