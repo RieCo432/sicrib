@@ -35,4 +35,7 @@ def build_living_room():
 
     living_room.allocate_leds()
 
+    living_room.register_doorway("kitchen", 98, 130)
+    living_room.register_doorway("hallway", 315, 348)
+
     return living_room

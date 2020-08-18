@@ -50,13 +50,37 @@ def off():
     return redirect(url_for('index'))
 
 
-@app.route("/sethuecolorspan", methods=["GET", "POST"])
-def set_hue_color_span():
+@app.route("/sethuecolorspanhorizontal", methods=["GET", "POST"])
+def set_hue_color_span_horizontal():
     fx_config = get_current_fx_data()
     form = HueColorSpanForm()
     if form.validate_on_submit():
         flash("Effect parameters accepted")
-        fx_config["effect"] = "hue_color_span"
+        fx_config["effect"] = "hue_color_span_horizontal"
+        fx_config["effect_params"]["start_index"] = form.start_index.data
+        fx_config["effect_params"]["starting_hue"] = float(form.starting_hue.data)
+        fx_config["effect_params"]["ending_hue"] = float(form.ending_hue.data)
+        fx_config["effect_params"]["speed"] = float(form.speed.data)
+        fx_config["effect_params"]["compress"] = form.compress.data
+        set_current_fx_data(fx_config)
+        print("data changed")
+        return redirect(url_for('index'))
+    else:
+        form.start_index.data = fx_config["effect_params"]["start_index"]
+        form.starting_hue.data = fx_config["effect_params"]["starting_hue"]
+        form.ending_hue.data = fx_config["effect_params"]["ending_hue"]
+        form.speed.data = fx_config["effect_params"]["speed"]
+        form.compress.data = fx_config["effect_params"]["compress"]
+
+        return render_template("huecolorspan.html", form=form)
+
+@app.route("/sethuecolorspanvertical", methods=["GET", "POST"])
+def set_hue_color_span_vertical():
+    fx_config = get_current_fx_data()
+    form = HueColorSpanForm()
+    if form.validate_on_submit():
+        flash("Effect parameters accepted")
+        fx_config["effect"] = "hue_color_span_vertical"
         fx_config["effect_params"]["start_index"] = form.start_index.data
         fx_config["effect_params"]["starting_hue"] = float(form.starting_hue.data)
         fx_config["effect_params"]["ending_hue"] = float(form.ending_hue.data)

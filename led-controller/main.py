@@ -8,8 +8,8 @@ import os
 
 living_room = build_living_room()
 
-led_list_in_order = living_room.build_list_horizontal_circle()
-#led_list_in_order = living_room.build_list_vertical_straight()
+living_room_horizontal_circle = living_room.build_list_horizontal_circle()
+living_room_vertical_straight = living_room.build_list_vertical_straight()
 
 # setup hue span color cycle
 timestamp_start = datetime.now()
@@ -21,6 +21,8 @@ iter_counter = 0
 living_room.brightness = 1.0
 
 fx_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "fx_config.json")
+doorway_states_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share",
+                                   "doorway_states.json")
 
 fx_config = json.load(open(fx_config_path, "r"))
 
@@ -28,10 +30,21 @@ while True:
 
     if fx_config["enabled"]:
 
-        if fx_config["effect"] == "hue_color_span":
+        if fx_config["effect"] == "hue_color_span_horizontal":
             time_elapsed = (datetime.now() - timestamp_start).total_seconds()
             compress = fx_config["effect_params"]["compress"]
-            living_room.set_hue_span_color_cycle(led_list_in_order,
+            living_room.set_hue_span_color_cycle(living_room_horizontal_circle,
+                                                 start_index=fx_config["effect_params"]["start_index"],
+                                                 compress=fx_config["effect_params"]["compress"],
+                                                 speed=fx_config["effect_params"]["speed"],
+                                                 starting_hue=fx_config["effect_params"]["starting_hue"],
+                                                 ending_hue=fx_config["effect_params"]["ending_hue"],
+                                                 time_elapsed=time_elapsed)
+
+        elif fx_config["effect"] == "hue_color_span_vertical":
+            time_elapsed = (datetime.now() - timestamp_start).total_seconds()
+            compress = fx_config["effect_params"]["compress"]
+            living_room.set_hue_span_color_cycle(living_room_vertical_straight,
                                                  start_index=fx_config["effect_params"]["start_index"],
                                                  compress=fx_config["effect_params"]["compress"],
                                                  speed=fx_config["effect_params"]["speed"],
@@ -40,15 +53,22 @@ while True:
                                                  time_elapsed=time_elapsed)
 
         elif fx_config["effect"] == "christmas_animation":
-            last_ceiling_stamp, last_vertical_stamp = living_room.christmas_animation(last_ceiling_stamp, last_vertical_stamp)
+            last_ceiling_stamp, last_vertical_stamp = living_room.christmas_animation(last_ceiling_stamp,
+                                                                                      last_vertical_stamp)
 
+        living_room.display_doorway_progress_bar_left_to_right("kitchen", (255, 255, 255), 1.0)
+        living_room.display_doorway_progress_bar_left_to_right("hallway", (255, 255, 255), 1.0)
 
-        for i in range(98, 131):
-            living_room.set_led_rgb(i, (255, 255, 255))
+        if "doorway_tracker" in fx_config["addons"]:
+            doorway_states = json.load(open(doorway_states_path, "r"))
 
-        for i in range(315, 349):
-            living_room.set_led_rgb(i, (255, 255, 255))
-
+            for key in doorway_states.keys():
+                color = (255, 255, 255)
+                if doorway_states[key]["direction"] == 0:
+                    color = (255, 0, 0)
+                elif doorway_states[key]["direction"] == 1:
+                    color = (0, 255, 0)
+                living_room.display_doorway_progress_bar_left_to_right(key, color, doorway_states[key]["progress"])
 
         living_room.set_led_rgb(464, (0,0,0))
 

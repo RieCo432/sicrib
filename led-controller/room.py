@@ -24,6 +24,8 @@ class Room:
 
         self.brightness = 1.0
 
+        self.doorway_led_numbers = {}
+
         # try importing the adafruit library and initialize strip. If it fails, demo mode will be used and the strip
         # is just a list of color tuples
         try:
@@ -109,6 +111,23 @@ class Room:
         for edge in self.all_edges_in_order:
             first = edge.allocate_leds(first)
 
+    def register_doorway(self, name, start_led, end_led):
+        self.doorway_led_numbers[name] = [i for i in range(start_led, end_led + 1)]
+
+    def display_doorway_progress_bar_left_to_right(self, name, color, progress):
+        leds_length = len(self.doorway_led_numbers[name])
+        leds_to_turn_on = math.ceil(progress * leds_length)
+        base_led = self.doorway_led_numbers[name][0]
+        for led_num in range(base_led, base_led + leds_to_turn_on):
+            self.set_led_rgb(led_num, color)
+
+    def display_doorway_progress_bar_middle_out(self, name, color, progress):
+        leds_length = len(self.doorway_led_numbers[name])
+        leds_to_turn_on = math.ceil(progress * leds_length)
+        base_led = self.doorway_led_numbers[name][leds_length // 2]
+        for led_num in range(base_led - leds_to_turn_on // 2, base_led + leds_to_turn_on // 2 + 1):
+            self.set_led_rgb(led_num, color)
+
     # build a list of lists of LEDs, enabling horizontal circular effect with or without vertical elements
     def build_list_horizontal_circle(self, include_vertical=True):
         list_of_leds = CircularList()
@@ -151,8 +170,8 @@ class Room:
     def update(self):
         if not self.demo:
             self.leds.show()
-        #else:
-            #print(self.leds)
+        else:
+            print(self.leds)
 
     def set_led_rgb(self, led_num, color):
         self.leds_hsv_colors[led_num] = color_helper.rgb_to_hsv(color)
