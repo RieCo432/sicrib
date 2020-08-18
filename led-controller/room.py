@@ -221,9 +221,13 @@ class Room:
         total_elements = len(list_of_leds)
         hue_diff = ending_hue - starting_hue
         total_degrees = (ending_hue - starting_hue) * compress
-        hue_shift_per_second = total_degrees / speed
+        try:
+            hue_shift_per_second = total_degrees / speed
+        except ZeroDivisionError:
+            hue_shift_per_second = 0
         hue_diff_element = total_degrees / total_elements
-        if hue_diff != 360.0:
+        
+        if abs(hue_diff)%360 != 0:
             hue_diff_element *= 2
             hue_center = (ending_hue - starting_hue) / 2
 
@@ -235,7 +239,7 @@ class Room:
 
         for element_index in range(len(list_of_leds)):
             for led_num in list_of_leds[element_index]:
-                if hue_diff == 360.0:
+                if abs(hue_diff) % 360 == 0:
                     hue = (starting_hue + hue_diff_element * element_index + time_elapsed * hue_shift_per_second) % 360
                 else:
                     hue = (hue_diff_element * element_index + time_elapsed * hue_shift_per_second) % (2 * hue_diff) + starting_hue

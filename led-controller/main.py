@@ -71,16 +71,13 @@ while True:
             last_ceiling_stamp, last_vertical_stamp = living_room.christmas_animation(last_ceiling_stamp,
                                                                                       last_vertical_stamp)
 
-        living_room.display_doorway_progress_bar_left_to_right("kitchen", (0, 0, 0), 1.0)
-        living_room.display_doorway_progress_bar_left_to_right("hallway", (0, 0, 0), 1.0)
-
-
         for addon in fx_config["addons"]:
             if addon["name"] == "doorway_tracker" and addon["enabled"]:
                 doorway_states = load_doorway_states()
 
                 for key in doorway_states.keys():
                     if doorway_states[key]["progress"] >= 0.01:
+                        living_room.display_doorway_progress_bar_left_to_right(key, addon["blank_color"], 1.0)
                         color = addon["blank_color"]
                         if doorway_states[key]["direction"] == 0:
                             color = addon["exit_color"]
@@ -103,7 +100,7 @@ while True:
 
     # speed analysis
     if iter_counter == 99:
-        # print(int(100 / (datetime.now() - iter_duration_stamp).total_seconds()), "updates per second")
+        #print(int(100 / (datetime.now() - iter_duration_stamp).total_seconds()), "updates per second")
         fx_config = load_fx_config()
         iter_counter = -1
         iter_duration_stamp = datetime.now()
