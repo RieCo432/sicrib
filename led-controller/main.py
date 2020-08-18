@@ -23,8 +23,23 @@ living_room.brightness = 1.0
 fx_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "fx_config.json")
 doorway_states_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share",
                                    "doorway_states.json")
+def load_fx_config():
+    while True:
+        try:
+            fx_config = json.load(open(fx_config_path, "r"))
+            return fx_config
+        except ValueError:
+            pass
 
-fx_config = json.load(open(fx_config_path, "r"))
+def load_doorway_states():
+    while True:
+        try:
+            doorway_states = json.load(open(doorway_states_path, "r"))
+            return doorway_states
+        except ValueError:
+            pass
+
+fx_config = load_fx_config()
 
 while True:
 
@@ -56,19 +71,27 @@ while True:
             last_ceiling_stamp, last_vertical_stamp = living_room.christmas_animation(last_ceiling_stamp,
                                                                                       last_vertical_stamp)
 
-        living_room.display_doorway_progress_bar_left_to_right("kitchen", (255, 255, 255), 1.0)
-        living_room.display_doorway_progress_bar_left_to_right("hallway", (255, 255, 255), 1.0)
+        living_room.display_doorway_progress_bar_left_to_right("kitchen", (0, 0, 0), 1.0)
+        living_room.display_doorway_progress_bar_left_to_right("hallway", (0, 0, 0), 1.0)
 
-        if "doorway_tracker" in fx_config["addons"]:
-            doorway_states = json.load(open(doorway_states_path, "r"))
 
-            for key in doorway_states.keys():
-                color = (255, 255, 255)
-                if doorway_states[key]["direction"] == 0:
-                    color = (255, 0, 0)
-                elif doorway_states[key]["direction"] == 1:
-                    color = (0, 255, 0)
-                living_room.display_doorway_progress_bar_left_to_right(key, color, doorway_states[key]["progress"])
+        for addon in fx_config["addons"]:
+            if addon["name"] == "doorway_tracker" and addon["enabled"]:
+                doorway_states = load_doorway_states()
+
+                for key in doorway_states.keys():
+                    if doorway_states[key]["progress"] >= 0.01:
+                        color = addon["blank_color"]
+                        if doorway_states[key]["direction"] == 0:
+                            color = addon["exit_color"]
+                        elif doorway_states[key]["direction"] == 1:
+                            color = addon["enter_color"]
+                        if addon["style"] == "middle_out":
+                            living_room.display_doorway_progress_bar_middle_out(key, color, doorway_states[key]["progress"])
+                        elif addon["style"] == "left_to_right":
+                            living_room.display_doorway_progress_bar_left_to_right(key, color, doorway_states[key]["progress"])
+
+
 
         living_room.set_led_rgb(464, (0,0,0))
 
@@ -81,7 +104,7 @@ while True:
     # speed analysis
     if iter_counter == 99:
         # print(int(100 / (datetime.now() - iter_duration_stamp).total_seconds()), "updates per second")
-        fx_config = json.load(open(fx_config_path, "r"))
+        fx_config = load_fx_config()
         iter_counter = -1
         iter_duration_stamp = datetime.now()
 

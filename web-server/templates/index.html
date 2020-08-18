@@ -3,10 +3,10 @@
 {% block content %}
     {% if enabled == true %}
         <p>Effects are on</p>
-        <a href="/off">Turn off</a>
+        <a href="/off">Turn off</a><br>
     {% else %}
         <p>Effects are off</p>
-        <a href="/on">Turn on</a>
+        <a href="/on">Turn on</a><br>
     {% endif %}
     
     {% if effect == "hue_color_span" %}
@@ -35,8 +35,8 @@
         {% endif %}
     {% endwith %}
 
-    <a href="/sethuecolorspanhorizontal">Set Hue Color Span</a><br>
-    <a href="/sethuecolorspanvertical">Set Hue Color Span</a><br>
+    <a href="/sethuecolorspanhorizontal">Set Hue Color Span Horizontal</a><br>
+    <a href="/sethuecolorspanvertical">Set Hue Color Span Vertical</a><br>
     <a href="/setchristmasanimation">Set Christmas Animation</a>
 
 {% endblock %}

@@ -116,14 +116,14 @@ class Room:
 
     def display_doorway_progress_bar_left_to_right(self, name, color, progress):
         leds_length = len(self.doorway_led_numbers[name])
-        leds_to_turn_on = math.ceil(progress * leds_length)
+        leds_to_turn_on = int(math.ceil(progress * leds_length))
         base_led = self.doorway_led_numbers[name][0]
         for led_num in range(base_led, base_led + leds_to_turn_on):
             self.set_led_rgb(led_num, color)
 
     def display_doorway_progress_bar_middle_out(self, name, color, progress):
         leds_length = len(self.doorway_led_numbers[name])
-        leds_to_turn_on = math.ceil(progress * leds_length)
+        leds_to_turn_on = int(math.ceil(progress * leds_length))
         base_led = self.doorway_led_numbers[name][leds_length // 2]
         for led_num in range(base_led - leds_to_turn_on // 2, base_led + leds_to_turn_on // 2 + 1):
             self.set_led_rgb(led_num, color)
