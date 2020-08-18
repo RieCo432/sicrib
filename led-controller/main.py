@@ -43,7 +43,11 @@ while True:
             last_ceiling_stamp, last_vertical_stamp = living_room.christmas_animation(last_ceiling_stamp, last_vertical_stamp)
 
 
+        for i in range(98, 131):
+            living_room.set_led_rgb(i, (255, 255, 255))
 
+        for i in range(315, 349):
+            living_room.set_led_rgb(i, (255, 255, 255))
 
 
         living_room.set_led_rgb(464, (0,0,0))
