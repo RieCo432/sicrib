@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
 from flask import Flask, render_template, flash, redirect, url_for
-from forms import HueColorSpanForm
+from forms import HueColorSpanForm, DoorwayTrackerForm
 import json
 import os
 
@@ -20,12 +20,22 @@ fx_params = {"hue_color_span": {
 
 fx_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "fx_config.json")
 
+
 def get_current_fx_data():
-    return json.load(open(fx_config_path, "r"))
+    while True:
+        try:
+            return json.load(open(fx_config_path, "r"))
+        except ValueError:
+            pass
 
 
 def set_current_fx_data(fx_config):
-    json.dump(fx_config, open(fx_config_path, "w"))
+    while True:
+        try:
+            json.dump(fx_config, open(fx_config_path, "w"))
+            break
+        except ValueError:
+            pass
 
 
 @app.route("/")
@@ -105,6 +115,63 @@ def set_christmas_animation():
     fx_config["effect"] = "christmas_animation"
     set_current_fx_data(fx_config)
     return redirect(url_for('index'))
+
+@app.route("/setdoorwaytracker", methods=["GET", "POST"])
+def set_doorway_tracker():
+    current_addons = []
+    form = DoorwayTrackerForm()
+    current_fx_config = get_current_fx_data()
+    current_doorway_config = {"name": "doorway_tracker",
+                              "enabled": True,
+                              "style": "middle_out",
+                              "blank_color": (0, 0, 0),
+                              "enter_color": (0, 255, 0),
+                              "exit_color": (255, 0, 0)}
+
+    for addon in current_fx_config["addons"]:
+        if addon["name"] != "doorway_tracker":
+            current_addons.append(addon)
+        else:
+            current_doorway_config = addon
+    
+    if form.validate_on_submit():
+        flash("Doorway Tracker Config updated")
+        current_doorway_config["enabled"] = form.enabled.data
+        current_doorway_config["style"] = form.style.data
+        current_doorway_config["blank_color"] = (form.blank_color_red.data, form.blank_color_green.data,
+                                                 form.blank_color_blue.data)
+        current_doorway_config["enter_color"] = (form.enter_color_red.data, form.enter_color_green.data,
+                                                 form.enter_color_blue.data)
+        current_doorway_config["exit_color"] = (form.exit_color_red.data, form.exit_color_green.data,
+                                                form.exit_color_blue.data)
+
+        current_addons.append(current_doorway_config)
+        current_fx_config["addons"] = current_addons
+        set_current_fx_data(current_fx_config)
+
+        return redirect(url_for("index"))
+
+    else:
+        form.enabled.data = current_doorway_config["enabled"]
+        form.style.data = current_doorway_config["style"]
+        
+        blank_color = current_doorway_config["blank_color"]
+        form.blank_color_red.data = blank_color[0]
+        form.blank_color_green.data = blank_color[1]
+        form.blank_color_blue.data = blank_color[2]
+
+        enter_color = current_doorway_config["enter_color"]
+        form.enter_color_red.data = enter_color[0]
+        form.enter_color_green.data = enter_color[1]
+        form.enter_color_blue.data = enter_color[2]
+
+        exit_color = current_doorway_config["exit_color"]
+        form.exit_color_red.data = exit_color[0]
+        form.exit_color_green.data = exit_color[1]
+        form.exit_color_blue.data = exit_color[2]
+
+        return render_template("doorway_tracker.html", form=form)
+            
 
 
 if __name__ == "__main__":
