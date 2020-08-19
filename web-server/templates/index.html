@@ -1,29 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% if enabled == true %}
-        <p>Effects are on</p>
-        <a href="/off">Turn off</a><br>
-    {% else %}
-        <p>Effects are off</p>
-        <a href="/on">Turn on</a><br>
-    {% endif %}
-    
-    {% if effect == "hue_color_span" %}
-        <p>Currently loaded effect is Hue Color Span with the following parameters:<br>
-        <label for="start_index_field">start_index=</label>
-        <input type="text" id="start_index_field" name="start_index_field" value="{{ effect_params['start_index']}}"><br>        
-        <label for="starting_hue_field">starting_hue=</label>        
-        <input type="text" id="starting_hue_field" name="starting_hue_field" value="{{ effect_params['starting_hue']}}"><br>        
-        <label for="ending_hue_field">ending_hue=</label>        
-        <input type="text" id="ending_hue_field" name="ending_hue_field" value="{{ effect_params['ending_hue']}}"><br>        
-        <label for="speed_field">speed=</label>        
-        <input type="text" id="speed_field" name="speed_field" value="{{ effect_params['speed']}}"><br>        
-        <label for="compress_field">compress=</label>        
-        <input type="text" id="compress_field" name="compress_field" value="{{effect_params['compress']}}"><br>        
-    {% elif effect == "christmas_animation" %}
-        <p>Currently loaded effect is Christmas Animation</p>
-    {% endif %}
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.enabled.label }}
+            {{ form.enabled() }}
+            {% for error in form.enabled.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.brightness.label }}
+            {{ form.brightness() }}
+            {% for error in form.brightness.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.effect.label }}
+            {{ form.effect() }}
+            {% for error in form.effect.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.submit() }}
+        </p>
+    </form>
 
     {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -35,9 +39,7 @@
         {% endif %}
     {% endwith %}
 
-    <a href="/sethuecolorspanhorizontal">Set Hue Color Span Horizontal</a><br>
-    <a href="/sethuecolorspanvertical">Set Hue Color Span Vertical</a><br>
-    <a href="/setchristmasanimation">Set Christmas Animation</a><br>
-    <a href="/setdoorwaytracker">Set Doorway Tracker</a>
+    <a href="/sethuecolorspan">Configure Hue Color Span</a><br><br>
+    <a href="/setdoorwaytracker">Configure Doorway Tracker</a>
 
 {% endblock %}

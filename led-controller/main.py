@@ -10,6 +10,8 @@ living_room = build_living_room()
 
 living_room_horizontal_circle = living_room.build_list_horizontal_circle()
 living_room_vertical_straight = living_room.build_list_vertical_straight()
+living_room_horizontal_circle_no_vertical = living_room.build_list_horizontal_circle(include_vertical=False)
+living_room_vertical_straight_no_horizontal = living_room.build_list_vertical_straight(include_horizontal=False)
 
 # setup hue span color cycle
 timestamp_start = datetime.now()
@@ -45,21 +47,21 @@ while True:
 
     if fx_config["enabled"]:
 
-        if fx_config["effect"] == "hue_color_span_horizontal":
+        if fx_config["effect"] == "hue_color_span":
             time_elapsed = (datetime.now() - timestamp_start).total_seconds()
             compress = fx_config["effect_params"]["compress"]
-            living_room.set_hue_span_color_cycle(living_room_horizontal_circle,
-                                                 start_index=fx_config["effect_params"]["start_index"],
-                                                 compress=fx_config["effect_params"]["compress"],
-                                                 speed=fx_config["effect_params"]["speed"],
-                                                 starting_hue=fx_config["effect_params"]["starting_hue"],
-                                                 ending_hue=fx_config["effect_params"]["ending_hue"],
-                                                 time_elapsed=time_elapsed)
-
-        elif fx_config["effect"] == "hue_color_span_vertical":
-            time_elapsed = (datetime.now() - timestamp_start).total_seconds()
-            compress = fx_config["effect_params"]["compress"]
-            living_room.set_hue_span_color_cycle(living_room_vertical_straight,
+            led_list = [i for i in range(living_room.num_leds)]
+            if fx_config["effect_params"]["direction"] == "horizontal":
+                if fx_config["effect_params"]["include_vertical"]:
+                    led_list = living_room_horizontal_circle
+                else:
+                    led_list = living_room_horizontal_circle_no_vertical
+            elif fx_config["effect_params"]["direction"] == "vertical":
+                if fx_config["effect_params"]["include_horizontal"]:
+                    led_list = living_room_vertical_straight
+                else:
+                    led_list = living_room_vertical_straight_no_horizontal
+            living_room.set_hue_span_color_cycle(led_list,
                                                  start_index=fx_config["effect_params"]["start_index"],
                                                  compress=fx_config["effect_params"]["compress"],
                                                  speed=fx_config["effect_params"]["speed"],
@@ -102,6 +104,7 @@ while True:
     if iter_counter == 99:
         #print(int(100 / (datetime.now() - iter_duration_stamp).total_seconds()), "updates per second")
         fx_config = load_fx_config()
+        living_room.brightness = fx_config["brightness"]
         iter_counter = -1
         iter_duration_stamp = datetime.now()
 

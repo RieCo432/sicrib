@@ -2,12 +2,17 @@ import json
 
 configs = {
     "enabled": True,
-    "effect": "hue_color_span_horizontal",
+    "brightness": 1.0,
+    "effect": "hue_color_span",
     "effect_params": {"start_index": 0,
                       "starting_hue": 120.0,
                       "ending_hue": 240.0,
                       "speed": 10,
-                      "compress": 2},
+                      "compress": 2,
+                      "direction": "vertical",
+                      "include_vertical": True,
+                      "include_horizontal": True},
+                      
     "addons": [{"name": "doorway_tracker",
                 "enabled": True,
                 "style": "middle_out",

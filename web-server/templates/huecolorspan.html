@@ -38,6 +38,27 @@
                   <span style="color: red;">[{{ error }}]</span>
               {% endfor %}
          </p>
+         <p>
+              {{ form.direction.label }}
+              {{ form.direction() }}
+              {% for error in form.direction.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
+         <p>
+              {{ form.include_vertical.label }}
+              {{ form.include_vertical() }}
+              {% for error in form.include_vertical.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
+         <p>
+              {{ form.include_horizontal.label }}
+              {{ form.include_horizontal() }}
+              {% for error in form.include_horizontal.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
          <p>{{ form.submit() }}</p>
      </form>
 {% endblock %}
