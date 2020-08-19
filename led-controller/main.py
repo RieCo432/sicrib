@@ -72,6 +72,9 @@ while True:
         elif fx_config["effect"] == "christmas_animation":
             last_ceiling_stamp, last_vertical_stamp = living_room.christmas_animation(last_ceiling_stamp,
                                                                                       last_vertical_stamp)
+        elif fx_config["effect"] == "none":
+            for led_num in range(living_room.num_leds):
+                living_room.set_led_rgb(led_num, (0, 0, 0))
 
         for addon in fx_config["addons"]:
             if addon["name"] == "doorway_tracker" and addon["enabled"]:
