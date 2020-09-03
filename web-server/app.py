@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-from flask import Flask, render_template, flash, redirect, url_for
+from flask import Flask, render_template, flash, redirect, url_for, request
 from forms import HueColorSpanForm, DoorwayTrackerForm, IndexForm
 import json
 import os
@@ -19,6 +19,7 @@ fx_params = {"hue_color_span": {
             }
 
 fx_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "fx_config.json")
+doorway_states_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "doorway_states.json")
 
 
 def get_current_fx_data():
@@ -26,6 +27,14 @@ def get_current_fx_data():
         try:
             return json.load(open(fx_config_path, "r"))
         except ValueError:
+            pass
+
+def set_current_doorway_states(doorway_states):
+    while True:
+        try:
+            json.dump(doorway_states, open(doorway_states_path, "w"))
+            break
+        except:
             pass
 
 
@@ -142,6 +151,13 @@ def set_doorway_tracker():
 
         return render_template("doorway_tracker.html", form=form)
 
+
+@app.route("/setdoorwaystate", methods=["POST"])
+def set_doorway_state():
+    doorway_states = request.json
+    set_current_doorway_states(doorway_states)
+
+    return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80, debug=True)
