@@ -6,7 +6,7 @@ from wtforms import SubmitField, DecimalField, IntegerField, BooleanField, Radio
 class IndexForm(FlaskForm):
     enabled = BooleanField("enabled")
     brightness = DecimalField("brightness")
-    effect = RadioField("effect", choices=["hue_color_span", "christmas_animation", "none"])
+    effect = RadioField("effect", choices=["hue_color_span", "christmas_animation", "static", "none"])
     submit = SubmitField("Apply")
 
 
@@ -17,6 +17,15 @@ class HueColorSpanForm(FlaskForm):
     speed = DecimalField("Speed") #, validators=[DataRequired()])
     compress = IntegerField("Compress") #, validators=[DataRequired()])
     direction = RadioField("Direction", choices=["horizontal", "vertical"])
+    include_vertical = BooleanField("include_vertical")
+    include_horizontal = BooleanField("include_horizontal")
+    submit = SubmitField("Apply")
+
+
+class StaticForm(FlaskForm):
+    red = IntegerField("red")
+    green = IntegerField("green")
+    blue = IntegerField("blue")
     include_vertical = BooleanField("include_vertical")
     include_horizontal = BooleanField("include_horizontal")
     submit = SubmitField("Apply")

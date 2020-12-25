@@ -1,25 +1,34 @@
 #! /usr/bin/python
 
 from flask import Flask, render_template, flash, redirect, url_for, request
-from forms import HueColorSpanForm, DoorwayTrackerForm, IndexForm
+from forms import HueColorSpanForm, DoorwayTrackerForm, IndexForm, StaticForm
 import json
 import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'you-will-never-guess'
 
-effects = ["hue_color_span", "christmas_animation"]
+# effects = ["hue_color_span", "christmas_animation", "static"]
 
 fx_params = {"hue_color_span": {
                 "starting_hue": 0.0,
                 "ending_hue": 360.0,
                 "speed": 60,
                 "compress": 1,
-                "start_index": 0}
+                "start_index": 0
+                },
+            "static": {
+                "red": 255,
+                "green": 255,
+                "blue": 255,
+                "include_horizontal": True,
+                "include_vertical": True
+                }
             }
 
 fx_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "fx_config.json")
 doorway_states_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "doorway_states.json")
+
 
 
 def get_current_fx_data():
@@ -72,27 +81,50 @@ def set_hue_color_span():
     form = HueColorSpanForm()
     if form.validate_on_submit():
         flash("Effect parameters accepted")
-        fx_config["effect_params"]["start_index"] = form.start_index.data
-        fx_config["effect_params"]["starting_hue"] = float(form.starting_hue.data)
-        fx_config["effect_params"]["ending_hue"] = float(form.ending_hue.data)
-        fx_config["effect_params"]["speed"] = float(form.speed.data)
-        fx_config["effect_params"]["compress"] = form.compress.data
-        fx_config["effect_params"]["direction"] = form.direction.data
-        fx_config["effect_params"]["include_vertical"] = form.include_vertical.data
-        fx_config["effect_params"]["include_horizontal"] = form.include_horizontal.data
+        fx_config["effect_params"]["hue_color_span"]["start_index"] = form.start_index.data
+        fx_config["effect_params"]["hue_color_span"]["starting_hue"] = float(form.starting_hue.data)
+        fx_config["effect_params"]["hue_color_span"]["ending_hue"] = float(form.ending_hue.data)
+        fx_config["effect_params"]["hue_color_span"]["speed"] = float(form.speed.data)
+        fx_config["effect_params"]["hue_color_span"]["compress"] = form.compress.data
+        fx_config["effect_params"]["hue_color_span"]["direction"] = form.direction.data
+        fx_config["effect_params"]["hue_color_span"]["include_vertical"] = form.include_vertical.data
+        fx_config["effect_params"]["hue_color_span"]["include_horizontal"] = form.include_horizontal.data
         set_current_fx_data(fx_config)
         return redirect(url_for('index'))
     else:
-        form.start_index.data = fx_config["effect_params"]["start_index"]
-        form.starting_hue.data = fx_config["effect_params"]["starting_hue"]
-        form.ending_hue.data = fx_config["effect_params"]["ending_hue"]
-        form.speed.data = fx_config["effect_params"]["speed"]
-        form.compress.data = fx_config["effect_params"]["compress"]
-        form.direction.data = fx_config["effect_params"]["direction"]
-        form.include_vertical.data = fx_config["effect_params"]["include_vertical"]
-        form.include_horizontal.data = fx_config["effect_params"]["include_horizontal"]
+        form.start_index.data = fx_config["effect_params"]["hue_color_span"]["start_index"]
+        form.starting_hue.data = fx_config["effect_params"]["hue_color_span"]["starting_hue"]
+        form.ending_hue.data = fx_config["effect_params"]["hue_color_span"]["ending_hue"]
+        form.speed.data = fx_config["effect_params"]["hue_color_span"]["speed"]
+        form.compress.data = fx_config["effect_params"]["hue_color_span"]["compress"]
+        form.direction.data = fx_config["effect_params"]["hue_color_span"]["direction"]
+        form.include_vertical.data = fx_config["effect_params"]["hue_color_span"]["include_vertical"]
+        form.include_horizontal.data = fx_config["effect_params"]["hue_color_span"]["include_horizontal"]
 
         return render_template("huecolorspan.html", form=form)
+
+
+@app.route("/setstatic", methods=["GET", "POST"])
+def set_static():
+    fx_config = get_current_fx_data()
+    form = StaticForm()
+    if form.validate_on_submit():
+        flash("Effect paramters accepted")
+        fx_config["effect_params"]["static"]["red"] = form.red.data
+        fx_config["effect_params"]["static"]["green"] = form.green.data
+        fx_config["effect_params"]["static"]["blue"] = form.blue.data
+        fx_config["effect_params"]["static"]["include_horizontal"] = form.include_horizontal.data
+        fx_config["effect_params"]["static"]["include_vertical"] = form.include_vertical.data
+        set_current_fx_data(fx_config)
+        return redirect(url_for("index"))
+    else:
+        form.red.data = fx_config["effect_params"]["static"]["red"]
+        form.green.data = fx_config["effect_params"]["static"]["green"]
+        form.blue.data = fx_config["effect_params"]["static"]["blue"]
+        form.include_horizontal.data = fx_config["effect_params"]["static"]["include_horizontal"]
+        form.include_vertical.data = fx_config["effect_params"]["static"]["include_vertical"]
+
+        return render_template("static.html", form=form)
 
 
 @app.route("/setdoorwaytracker", methods=["GET", "POST"])

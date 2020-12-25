@@ -49,29 +49,48 @@ while True:
 
         if fx_config["effect"] == "hue_color_span":
             time_elapsed = (datetime.now() - timestamp_start).total_seconds()
-            compress = fx_config["effect_params"]["compress"]
+            compress = fx_config["effect_params"]["hue_color_span"]["compress"]
             led_list = [i for i in range(living_room.num_leds)]
-            if fx_config["effect_params"]["direction"] == "horizontal":
-                if fx_config["effect_params"]["include_vertical"]:
+            if fx_config["effect_params"]["hue_color_span"]["direction"] == "horizontal":
+                if fx_config["effect_params"]["hue_color_span"]["include_vertical"]:
                     led_list = living_room_horizontal_circle
                 else:
                     led_list = living_room_horizontal_circle_no_vertical
-            elif fx_config["effect_params"]["direction"] == "vertical":
-                if fx_config["effect_params"]["include_horizontal"]:
+            elif fx_config["effect_params"]["hue_color_span"]["direction"] == "vertical":
+                if fx_config["effect_params"]["hue_color_span"]["include_horizontal"]:
                     led_list = living_room_vertical_straight
                 else:
                     led_list = living_room_vertical_straight_no_horizontal
             living_room.set_hue_span_color_cycle(led_list,
-                                                 start_index=fx_config["effect_params"]["start_index"],
-                                                 compress=fx_config["effect_params"]["compress"],
-                                                 speed=fx_config["effect_params"]["speed"],
-                                                 starting_hue=fx_config["effect_params"]["starting_hue"],
-                                                 ending_hue=fx_config["effect_params"]["ending_hue"],
+                                                 start_index=fx_config["effect_params"]["hue_color_span"]["start_index"],
+                                                 compress=fx_config["effect_params"]["hue_color_span"]["compress"],
+                                                 speed=fx_config["effect_params"]["hue_color_span"]["speed"],
+                                                 starting_hue=fx_config["effect_params"]["hue_color_span"]["starting_hue"],
+                                                 ending_hue=fx_config["effect_params"]["hue_color_span"]["ending_hue"],
                                                  time_elapsed=time_elapsed)
 
         elif fx_config["effect"] == "christmas_animation":
             last_ceiling_stamp, last_vertical_stamp = living_room.christmas_animation(last_ceiling_stamp,
                                                                                       last_vertical_stamp)
+
+        elif fx_config["effect"] == "static":
+            red = fx_config["effect_params"]["static"]["red"]
+            green = fx_config["effect_params"]["static"]["green"]
+            blue = fx_config["effect_params"]["static"]["blue"]
+            led_list = []
+
+            if fx_config["effect_params"]["static"]["include_horizontal"]:
+                for edge in living_room.ceiling_edges_clockwise:
+                    for led_num in edge.leds:
+                        led_list.append(led_num)
+            if fx_config["effect_params"]["static"]["include_vertical"]:
+                for edge in living_room.vertical_edges_up:
+                    for led_num in edge.leds:
+                        led_list.append(led_num)
+
+            for led_num in led_list:
+                living_room.set_led_rgb(led_num, (red, green, blue))
+
         elif fx_config["effect"] == "none":
             for led_num in range(living_room.num_leds):
                 living_room.set_led_rgb(led_num, (0, 0, 0))

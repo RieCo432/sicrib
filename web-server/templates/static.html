@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+     <h1>Set Static</h1>
+     <form action="" method="post" novalidate>
+         {{ form.hidden_tag() }}
+         <p>
+             {{ form.red.label }}
+             {{ form.red() }}
+             {% for error in form.red.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
+         <p>
+              {{ form.green.label }}
+              {{ form.green() }}
+              {% for error in form.green.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
+         <p>
+              {{ form.blue.label }}
+              {{ form.blue() }}
+              {% for error in form.blue.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
+         <p>
+              {{ form.include_vertical.label }}
+              {{ form.include_vertical() }}
+              {% for error in form.include_vertical.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
+         <p>
+              {{ form.include_horizontal.label }}
+              {{ form.include_horizontal() }}
+              {% for error in form.include_horizontal.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
+         <p>{{ form.submit() }}</p>
+     </form>
+{% endblock %}
