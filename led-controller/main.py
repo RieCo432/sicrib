@@ -63,7 +63,8 @@ while True:
                     if (edge.data_flow == DataFlow.CEIL_TO_FLOOR or edge.data_flow == DataFlow.FLOOR_TO_CEIL) and fx_config["effect_params"]["hue_color_span"]["include_vertical"]:
                         led_list.append(edge.leds)
                     elif edge.data_flow <= 7 and fx_config["effect_params"]["hue_color_span"]["include_horizontal"]:
-                        led_list.append(edge.leds)
+                        for led_num in edge.leds:
+                            led_list.append(led_num)
 
             elif fx_config["effect_params"]["hue_color_span"]["direction"] == "vertical":
                 if fx_config["effect_params"]["hue_color_span"]["include_vertical"]:
