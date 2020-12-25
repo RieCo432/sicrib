@@ -45,6 +45,10 @@ fx_config = load_fx_config()
 
 while True:
 
+    # start by wiping all previous colors
+    for led_num in range(living_room.num_leds):
+        living_room.set_led_rgb(led_num, (0, 0, 0))
+
     if fx_config["enabled"]:
 
         if fx_config["effect"] == "hue_color_span":
@@ -112,19 +116,13 @@ while True:
                         elif addon["style"] == "left_to_right":
                             living_room.display_doorway_progress_bar_left_to_right(key, color, doorway_states[key]["progress"])
 
-
-
         living_room.set_led_rgb(464, (0,0,0))
 
-    else:
-        for led_num in range(living_room.num_leds):
-            living_room.set_led_rgb(led_num, (0, 0, 0))
-
+    living_room.apply_brightness()
     living_room.update()
 
     # speed analysis
     if iter_counter == 99:
-        #print(int(100 / (datetime.now() - iter_duration_stamp).total_seconds()), "updates per second")
         fx_config = load_fx_config()
         living_room.brightness = fx_config["brightness"]
         iter_counter = -1

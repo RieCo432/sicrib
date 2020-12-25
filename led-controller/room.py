@@ -232,10 +232,10 @@ class Room:
             hue_center = (ending_hue - starting_hue) / 2
 
         # find index of starting led in list and shift backwards so starting LED is at the beginning
-        list_of_leds.shiftBackwardN(start_index)
+        # list_of_leds.shiftBackwardN(start_index)
 
         saturation = 1.0
-        value = self.brightness
+        value = 1.0
 
         for element_index in range(len(list_of_leds)):
             for led_num in list_of_leds[element_index]:
@@ -278,8 +278,6 @@ class Room:
                     offset = 2 * i
                     self.set_led_rgb(edge.leds[i], (255, max(0, min(255, offset + randint(-15, 15))), 0))
             last_vertical_stamp = datetime.now()
-
-        self.apply_brightness()
 
         return last_ceiling_stamp, last_vertical_stamp
 
