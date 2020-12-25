@@ -5,6 +5,8 @@ import time
 from config import build_living_room
 from datetime import datetime
 import os
+from compass import DataFlow
+from circular_list import CircularList
 
 living_room = build_living_room()
 
@@ -54,17 +56,30 @@ while True:
         if fx_config["effect"] == "hue_color_span":
             time_elapsed = (datetime.now() - timestamp_start).total_seconds()
             compress = fx_config["effect_params"]["hue_color_span"]["compress"]
-            led_list = [i for i in range(living_room.num_leds)]
+            #led_list = [i for i in range(living_room.num_leds)]
+            led_list = CircularList()
             if fx_config["effect_params"]["hue_color_span"]["direction"] == "horizontal":
-                if fx_config["effect_params"]["hue_color_span"]["include_vertical"]:
-                    led_list = living_room_horizontal_circle
-                else:
-                    led_list = living_room_horizontal_circle_no_vertical
+                for edge in living_room.all_edges_in_order:
+                    if (edge.data_flow == DataFlow.CEIL_TO_FLOOR or edge.data_flow == DataFlow.FLOOR_TO_CEIL) and fx_config["effect_params"]["hue_color_span"]["include_vertical"]:
+                        led_list.append(edge.leds)
+                    elif edge.data_flow <= 7 and fx_config["effect_params"]["hue_color_span"]["include_horizontal"]:
+                        led_list.append(edge.leds)
+
             elif fx_config["effect_params"]["hue_color_span"]["direction"] == "vertical":
+                if fx_config["effect_params"]["hue_color_span"]["include_vertical"]:
+                    for i in range(0, living_room.vertical_edges_up[0].length):
+                        led_list.append([living_room.vertical_edges_up[0].leds[i],
+                                         living_room.vertical_edges_up[1].leds[i],
+                                         living_room.vertical_edges_up[2].leds[i],
+                                         living_room.vertical_edges_up[3].leds[i]])
                 if fx_config["effect_params"]["hue_color_span"]["include_horizontal"]:
-                    led_list = living_room_vertical_straight
-                else:
-                    led_list = living_room_vertical_straight_no_horizontal
+                    ceiling_leds = []
+                    for edge in living_room.ceiling_edges_clockwise:
+                        for led_num in edge.leds:
+                            ceiling_leds.append(led_num)
+                    led_list.append(ceiling_leds)
+
+
             living_room.set_hue_span_color_cycle(led_list,
                                                  start_index=fx_config["effect_params"]["hue_color_span"]["start_index"],
                                                  compress=fx_config["effect_params"]["hue_color_span"]["compress"],
