@@ -221,7 +221,7 @@ class Room:
     # speed is how many seconds each color should take for one rotation
     # starting hue determines which color is used at the main point, hue is in degrees (0 is red, 120 is green,
     # 240 is green)
-    def set_hue_span_color_cycle(self, list_of_leds, start_index=0, starting_hue=0.0, ending_hue=360.0, speed=60, compress=1, time_elapsed=0):
+    def set_hue_span_color_rainbow(self, list_of_leds, start_index=0, starting_hue=0.0, ending_hue=360.0, speed=60, compress=1, time_elapsed=0):
 
         total_elements = len(list_of_leds)
         hue_diff = ending_hue - starting_hue
@@ -253,6 +253,28 @@ class Room:
                         hue = ending_hue - excess
 
                 self.set_led_hsv(led_num, (hue, saturation, value))
+
+    def set_hue_span_color_cycle(self, list_of_leds, starting_hue=0.0, ending_hue=360.0, speed=60, time_elapsed=0):
+
+        hue_diff = ending_hue - starting_hue
+        try:
+            hue_shift_per_second = hue_diff / speed
+        except ZeroDivisionError:
+            hue_shift_per_second = 0
+
+        saturation = 1.0
+        value = 1.0
+
+        if abs(hue_diff) % 360 == 0:
+            hue = (starting_hue + time_elapsed * hue_shift_per_second) % 360
+        else:
+            hue = (time_elapsed * hue_shift_per_second) % (2 * hue_diff) + starting_hue
+            if hue > ending_hue:
+                excess = hue - ending_hue
+                hue = ending_hue - excess
+
+        for led_num in list_of_leds:
+            self.set_led_hsv(led_num, (hue, saturation, value))
 
     def christmas_animation(self, last_ceiling_stamp, last_vertical_stamp):
 

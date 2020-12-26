@@ -104,7 +104,7 @@ while True:
 
     if fx_config["enabled"]:
 
-        if fx_config["effect"] == "hue_color_span":
+        if fx_config["effect"] == "hue_color_span_rainbow":
             # start by wiping all previous colors
             for led_num in range(living_room.num_leds):
                 living_room.set_led_rgb(led_num, (0, 0, 0))
@@ -136,7 +136,7 @@ while True:
                     led_list.append(ceiling_leds)
 
 
-            living_room.set_hue_span_color_cycle(led_list,
+            living_room.set_hue_span_color_rainbow(led_list,
                                                  start_index=fx_config["effect_params"]["hue_color_span"]["start_index"],
                                                  compress=fx_config["effect_params"]["hue_color_span"]["compress"],
                                                  speed=fx_config["effect_params"]["hue_color_span"]["speed"],
@@ -168,6 +168,30 @@ while True:
 
             for led_num in led_list:
                 living_room.set_led_rgb(led_num, (red, green, blue))
+
+        elif fx_config["effect"] == "hue_color_span_cycle":
+            # start by wiping all previous colors
+            for led_num in range(living_room.num_leds):
+                living_room.set_led_rgb(led_num, (0, 0, 0))
+
+            time_elapsed = (datetime.now() - timestamp_start).total_seconds()
+            led_list = CircularList()
+            if fx_config["effect_params"]["hue_color_span"]["include_horizontal"]:
+                for edge in living_room.ceiling_edges_clockwise:
+                    for led_num in edge.leds:
+                        led_list.append(led_num)
+            if fx_config["effect_params"]["hue_color_span"]["include_vertical"]:
+                for edge in living_room.vertical_edges_up:
+                    for led_num in edge.leds:
+                        led_list.append(led_num)
+            living_room.set_hue_span_color_cycle(led_list,
+                                                   speed=fx_config["effect_params"]["hue_color_span"]["speed"],
+                                                   starting_hue=fx_config["effect_params"]["hue_color_span"][
+                                                       "starting_hue"],
+                                                   ending_hue=fx_config["effect_params"]["hue_color_span"][
+                                                       "ending_hue"],
+                                                   time_elapsed=time_elapsed)
+
 
         elif fx_config["effect"] == "none":
             for led_num in range(living_room.num_leds):

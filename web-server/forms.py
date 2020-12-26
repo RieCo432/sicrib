@@ -6,7 +6,8 @@ from wtforms import SubmitField, DecimalField, IntegerField, BooleanField, Radio
 class IndexForm(FlaskForm):
     enabled = BooleanField("enabled")
     brightness = DecimalField("brightness")
-    effect = RadioField("effect", choices=["hue_color_span", "christmas_animation", "static", "none"])
+    effect = RadioField("effect", choices=["hue_color_span_rainbow", "hue_color_span_cycle",
+                                           "christmas_animation", "static", "none"])
     submit = SubmitField("Apply")
 
 
