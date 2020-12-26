@@ -21,14 +21,15 @@ def build_living_room():
     s315 = Edge(vertical_length, Direction.NW, DataFlow.FLOOR_TO_CEIL)
 
     living_room = Room(4 * vertical_length + 2 * horizontal_length_short + 2 * horizontal_length_long,
+                       horizontal_length_short, horizontal_length_long, vertical_length,
                        s0, s45, s90, s135, s180, s225, s270, s315, init_philips_hue=True,
                        philips_hue_ip="192.168.178.2", light_names=["Living Room Light"])
 
     #living_room = Room(4 * vertical_length + 2 * horizontal_length_short + 2 * horizontal_length_long,
     #                   s0, s45, s90, s135, s180, s225, s270, s315)
 
-    living_room.set_sequences(living_room.north_east, living_room.north, living_room.north_west, living_room.west,
-                              living_room.south_west, living_room.south, living_room.south_east, living_room.east,
+    living_room.set_sequences(living_room.south_east, living_room.south, living_room.south_west, living_room.west,
+                              living_room.north_west, living_room.north, living_room.north_east, living_room.east,
                               living_room.north, living_room.west, living_room.south, living_room.east,
                               living_room.north_east, living_room.north_west, living_room.south_west,
                               living_room.south_east)

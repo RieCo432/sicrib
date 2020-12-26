@@ -7,8 +7,63 @@ from datetime import datetime
 import os
 from compass import DataFlow
 from circular_list import CircularList
+import pygame
+from os import environ
+from compass import Direction
+import sys
+import math
 
 living_room = build_living_room()
+leds_display_coords = []
+
+if living_room.demo:
+    environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (30, 30)
+    pygame.init()
+    screen = pygame.display.set_mode((living_room.length * 5+10, living_room.short * 5+10))
+    leds_display_coords = [(0, 0)] * living_room.num_leds
+    alpha = math.pi * 1/3
+
+    for edge in living_room.all_edges_in_order:
+        if edge.direction == Direction.N:
+            for i in range(edge.length):
+                leds_display_coords[edge.leds[i]] = (3 + (1+i)*5, 3)
+        elif edge.direction == Direction.S:
+            for i in range(edge.length):
+                leds_display_coords[edge.leds[i]] = (screen.get_width() - 3 - (1+i)*5, screen.get_height() - 3)
+        elif edge.direction == Direction.E:
+            for i in range(edge.length):
+                leds_display_coords[edge.leds[i]] = (screen.get_width() - 3, 3 + (1+i)*5)
+        elif edge.direction == Direction.W:
+            for i in range(edge.length):
+                leds_display_coords[edge.leds[i]] = (3, screen.get_height() - 3 - (1+i) * 5)
+        elif edge.direction == Direction.NE:
+            for i in range(edge.length):
+                leds_display_coords[edge.leds[i]] = (math.floor(screen.get_width() + (2+edge.length-i)*
+                                                                5*math.cos(-math.pi/2 - alpha))
+                                                     , math.floor(-(2+edge.length-i)*5*math.sin(-math.pi/2 - alpha)+5))
+        elif edge.direction == Direction.NW:
+            for i in range(edge.length):
+                leds_display_coords[edge.leds[i]] = (math.floor((2+edge.length-i)*5*math.cos(-math.pi/2 + alpha)),
+                                                     math.floor(-(2+edge.length-i)*5*math.sin(-math.pi/2 + alpha)+5))
+        elif edge.direction == Direction.SW:
+            for i in range(edge.length):
+                leds_display_coords[edge.leds[i]] = (math.floor((2+edge.length-i) * 5 * math.cos(math.pi / 2 - alpha)),
+                                                     math.floor(screen.get_height()-(2+edge.length-i) * 5 *
+                                                                math.sin(math.pi / 2 - alpha)-5))
+        elif edge.direction == Direction.SE:
+            print(edge.leds[0])
+            for i in range(edge.length):
+                leds_display_coords[edge.leds[i]] = (math.floor(screen.get_width()+(2+edge.length-i)*
+                                                                5*math.cos(math.pi/2 + alpha)),
+                                                     math.floor(screen.get_height()-(2+edge.length-i)*
+                                                                5*math.sin(math.pi/2 + alpha)-5))
+
+
+
+
+
+    pygame.font.init()
+    screen.fill(0)
 
 living_room_horizontal_circle = living_room.build_list_horizontal_circle()
 living_room_vertical_straight = living_room.build_list_vertical_straight()
@@ -47,13 +102,13 @@ fx_config = load_fx_config()
 
 while True:
 
-    # start by wiping all previous colors
-    for led_num in range(living_room.num_leds):
-        living_room.set_led_rgb(led_num, (0, 0, 0))
-
     if fx_config["enabled"]:
 
         if fx_config["effect"] == "hue_color_span":
+            # start by wiping all previous colors
+            for led_num in range(living_room.num_leds):
+                living_room.set_led_rgb(led_num, (0, 0, 0))
+
             time_elapsed = (datetime.now() - timestamp_start).total_seconds()
             compress = fx_config["effect_params"]["hue_color_span"]["compress"]
             #led_list = [i for i in range(living_room.num_leds)]
@@ -94,6 +149,9 @@ while True:
                                                                                       last_vertical_stamp)
 
         elif fx_config["effect"] == "static":
+            # start by wiping all previous colors
+            for led_num in range(living_room.num_leds):
+                living_room.set_led_rgb(led_num, (0, 0, 0))
             red = fx_config["effect_params"]["static"]["red"]
             green = fx_config["effect_params"]["static"]["green"]
             blue = fx_config["effect_params"]["static"]["blue"]
@@ -136,6 +194,15 @@ while True:
 
     living_room.apply_brightness()
     living_room.update()
+
+    if living_room.demo:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        for i in range(living_room.num_leds):
+            pygame.draw.circle(screen, living_room.leds[i], leds_display_coords[i], 2)
+        pygame.display.update()
 
     # speed analysis
     if iter_counter == 99:

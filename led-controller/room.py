@@ -9,7 +9,7 @@ from random import randint
 
 class Room:
 
-    def __init__(self, num_leds, s0, s45, s90, s135, s180, s225, s270, s315, init_philips_hue=False,
+    def __init__(self, num_leds, short, length, height, s0, s45, s90, s135, s180, s225, s270, s315, init_philips_hue=False,
                  philips_hue_ip="0.0.0.0", light_names=None):
 
         # if no light names are specified, replace with empty list
@@ -19,6 +19,11 @@ class Room:
         # get total number of leds by adding together all edge lengths
         self.num_leds = sum([s0.length, s45.length, s90.length, s135.length, s180.length, s225.length, s270.length,
                              s315.length])
+
+        # record horizontal short, long measures and height
+        self.short = short
+        self.length = length
+        self.height = height
 
         self.leds_hsv_colors = [(0, 0, 0)] * self.num_leds
 
@@ -170,8 +175,8 @@ class Room:
     def update(self):
         if not self.demo:
             self.leds.show()
-        else:
-            print(self.leds)
+        #else:
+        #    print(self.leds)
 
     def set_led_rgb(self, led_num, color):
         self.leds_hsv_colors[led_num] = color_helper.rgb_to_hsv(color)
