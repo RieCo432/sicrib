@@ -216,6 +216,10 @@ while True:
 
         living_room.set_led_rgb(464, (0,0,0))
 
+    else:
+        for led_num in range(living_room.num_leds):
+            living_room.set_led_rgb(led_num, (0, 0, 0))
+
     living_room.apply_brightness()
     living_room.update()
 
