@@ -1,7 +1,6 @@
 #! /usr/bin/python2.7
 
 import json
-import time
 from config import build_living_room
 from datetime import datetime
 import os
@@ -19,48 +18,48 @@ leds_display_coords = []
 if living_room.demo:
     environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (30, 30)
     pygame.init()
-    screen = pygame.display.set_mode((living_room.length * 5+10, living_room.short * 5+10))
+    screen = pygame.display.set_mode((living_room.length * 5 + 10, living_room.short * 5 + 10))
     leds_display_coords = [(0, 0)] * living_room.num_leds
-    alpha = math.pi * 1/3
+    alpha = math.pi * 1 / 3
 
     for edge in living_room.all_edges_in_order:
         if edge.direction == Direction.N:
             for i in range(edge.length):
-                leds_display_coords[edge.leds[i]] = (3 + (1+i)*5, 3)
+                leds_display_coords[edge.leds[i]] = (3 + (1 + i) * 5, 3)
         elif edge.direction == Direction.S:
             for i in range(edge.length):
-                leds_display_coords[edge.leds[i]] = (screen.get_width() - 3 - (1+i)*5, screen.get_height() - 3)
+                leds_display_coords[edge.leds[i]] = (screen.get_width() - 3 - (1 + i) * 5, screen.get_height() - 3)
         elif edge.direction == Direction.E:
             for i in range(edge.length):
-                leds_display_coords[edge.leds[i]] = (screen.get_width() - 3, 3 + (1+i)*5)
+                leds_display_coords[edge.leds[i]] = (screen.get_width() - 3, 3 + (1 + i) * 5)
         elif edge.direction == Direction.W:
             for i in range(edge.length):
-                leds_display_coords[edge.leds[i]] = (3, screen.get_height() - 3 - (1+i) * 5)
+                leds_display_coords[edge.leds[i]] = (3, screen.get_height() - 3 - (1 + i) * 5)
         elif edge.direction == Direction.NE:
             for i in range(edge.length):
-                leds_display_coords[edge.leds[i]] = (math.floor(screen.get_width() + (2+edge.length-i)*
-                                                                5*math.cos(-math.pi/2 - alpha))
-                                                     , math.floor(-(2+edge.length-i)*5*math.sin(-math.pi/2 - alpha)+5))
+                leds_display_coords[edge.leds[i]] = (math.floor(screen.get_width() + (2 + edge.length - i) *
+                                                                5 * math.cos(-math.pi / 2 - alpha)),
+                                                     math.floor(-(2 + edge.length - i) * 5 * math.sin(-math.pi / 2 -
+                                                                                                      alpha) + 5))
         elif edge.direction == Direction.NW:
             for i in range(edge.length):
-                leds_display_coords[edge.leds[i]] = (math.floor((2+edge.length-i)*5*math.cos(-math.pi/2 + alpha)),
-                                                     math.floor(-(2+edge.length-i)*5*math.sin(-math.pi/2 + alpha)+5))
+                leds_display_coords[edge.leds[i]] = (math.floor((2 + edge.length - i) * 5 * math.cos(-math.pi / 2 +
+                                                                                                     alpha)),
+                                                     math.floor(-(2 + edge.length - i) * 5 * math.sin(-math.pi / 2 +
+                                                                                                      alpha) + 5))
         elif edge.direction == Direction.SW:
             for i in range(edge.length):
-                leds_display_coords[edge.leds[i]] = (math.floor((2+edge.length-i) * 5 * math.cos(math.pi / 2 - alpha)),
-                                                     math.floor(screen.get_height()-(2+edge.length-i) * 5 *
-                                                                math.sin(math.pi / 2 - alpha)-5))
+                leds_display_coords[edge.leds[i]] = (math.floor((2 + edge.length - i) * 5 * math.cos(math.pi / 2 -
+                                                                                                     alpha)),
+                                                     math.floor(screen.get_height() - (2 + edge.length - i) * 5 *
+                                                                math.sin(math.pi / 2 - alpha) - 5))
         elif edge.direction == Direction.SE:
             print(edge.leds[0])
             for i in range(edge.length):
-                leds_display_coords[edge.leds[i]] = (math.floor(screen.get_width()+(2+edge.length-i)*
-                                                                5*math.cos(math.pi/2 + alpha)),
-                                                     math.floor(screen.get_height()-(2+edge.length-i)*
-                                                                5*math.sin(math.pi/2 + alpha)-5))
-
-
-
-
+                leds_display_coords[edge.leds[i]] = (math.floor(screen.get_width() + (2 + edge.length - i) *
+                                                                5 * math.cos(math.pi / 2 + alpha)),
+                                                     math.floor(screen.get_height() - (2 + edge.length - i) *
+                                                                5 * math.sin(math.pi / 2 + alpha) - 5))
 
     pygame.font.init()
     screen.fill(0)
@@ -82,21 +81,23 @@ living_room.brightness = 1.0
 fx_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "fx_config.json")
 doorway_states_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share",
                                    "doorway_states.json")
+
+
 def load_fx_config():
     while True:
         try:
-            fx_config = json.load(open(fx_config_path, "r"))
-            return fx_config
+            return json.load(open(fx_config_path, "r"))
         except ValueError:
             pass
+
 
 def load_doorway_states():
     while True:
         try:
-            doorway_states = json.load(open(doorway_states_path, "r"))
-            return doorway_states
+            return json.load(open(doorway_states_path, "r"))
         except ValueError:
             pass
+
 
 fx_config = load_fx_config()
 
@@ -111,11 +112,11 @@ while True:
 
             time_elapsed = (datetime.now() - timestamp_start).total_seconds()
             compress = fx_config["effect_params"]["hue_color_span"]["compress"]
-            #led_list = [i for i in range(living_room.num_leds)]
             led_list = CircularList()
             if fx_config["effect_params"]["hue_color_span"]["direction"] == "horizontal":
                 for edge in living_room.all_edges_in_order:
-                    if (edge.data_flow == DataFlow.CEIL_TO_FLOOR or edge.data_flow == DataFlow.FLOOR_TO_CEIL) and fx_config["effect_params"]["hue_color_span"]["include_vertical"]:
+                    if (edge.data_flow == DataFlow.CEIL_TO_FLOOR or edge.data_flow == DataFlow.FLOOR_TO_CEIL) and \
+                            fx_config["effect_params"]["hue_color_span"]["include_vertical"]:
                         led_list.append(edge.leds)
                     elif edge.data_flow <= 7 and fx_config["effect_params"]["hue_color_span"]["include_horizontal"]:
                         for led_num in edge.leds:
@@ -135,14 +136,15 @@ while True:
                             ceiling_leds.append(led_num)
                     led_list.append(ceiling_leds)
 
-
             living_room.set_hue_span_color_rainbow(led_list,
-                                                 start_index=fx_config["effect_params"]["hue_color_span"]["start_index"],
-                                                 compress=fx_config["effect_params"]["hue_color_span"]["compress"],
-                                                 speed=fx_config["effect_params"]["hue_color_span"]["speed"],
-                                                 starting_hue=fx_config["effect_params"]["hue_color_span"]["starting_hue"],
-                                                 ending_hue=fx_config["effect_params"]["hue_color_span"]["ending_hue"],
-                                                 time_elapsed=time_elapsed)
+                                                   start_index=fx_config["effect_params"]["hue_color_span"]
+                                                   ["start_index"],
+                                                   compress=fx_config["effect_params"]["hue_color_span"]["compress"],
+                                                   speed=fx_config["effect_params"]["hue_color_span"]["speed"],
+                                                   starting_hue=fx_config["effect_params"]["hue_color_span"]
+                                                   ["starting_hue"],
+                                                   ending_hue=fx_config["effect_params"]["hue_color_span"]
+                                                   ["ending_hue"], time_elapsed=time_elapsed)
 
         elif fx_config["effect"] == "christmas_animation":
             last_ceiling_stamp, last_vertical_stamp = living_room.christmas_animation(last_ceiling_stamp,
@@ -185,13 +187,12 @@ while True:
                     for led_num in edge.leds:
                         led_list.append(led_num)
             living_room.set_hue_span_color_cycle(led_list,
-                                                   speed=fx_config["effect_params"]["hue_color_span"]["speed"],
-                                                   starting_hue=fx_config["effect_params"]["hue_color_span"][
-                                                       "starting_hue"],
-                                                   ending_hue=fx_config["effect_params"]["hue_color_span"][
-                                                       "ending_hue"],
-                                                   time_elapsed=time_elapsed)
-
+                                                 speed=fx_config["effect_params"]["hue_color_span"]["speed"],
+                                                 starting_hue=fx_config["effect_params"]["hue_color_span"][
+                                                     "starting_hue"],
+                                                 ending_hue=fx_config["effect_params"]["hue_color_span"][
+                                                     "ending_hue"],
+                                                 time_elapsed=time_elapsed)
 
         elif fx_config["effect"] == "none":
             for led_num in range(living_room.num_leds):
@@ -210,11 +211,13 @@ while True:
                         elif doorway_states[key]["direction"] == 1:
                             color = addon["enter_color"]
                         if addon["style"] == "middle_out":
-                            living_room.display_doorway_progress_bar_middle_out(key, color, doorway_states[key]["progress"])
+                            living_room.display_doorway_progress_bar_middle_out(key, color, doorway_states[key]
+                                                                                ["progress"])
                         elif addon["style"] == "left_to_right":
-                            living_room.display_doorway_progress_bar_left_to_right(key, color, doorway_states[key]["progress"])
+                            living_room.display_doorway_progress_bar_left_to_right(key, color, doorway_states[key]
+                                                                                   ["progress"])
 
-        living_room.set_led_rgb(464, (0,0,0))
+        living_room.set_led_rgb(464, (0, 0, 0))
 
     else:
         for led_num in range(living_room.num_leds):

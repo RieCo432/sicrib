@@ -1,5 +1,3 @@
-from compass import DataFlow
-
 class Edge:
 
     def __init__(self, length, direction, data_flow):

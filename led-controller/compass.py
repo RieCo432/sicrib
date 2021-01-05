@@ -12,6 +12,7 @@ class DataFlow:
     FLOOR_TO_CEIL = 8
     CEIL_TO_FLOOR = 9
 
+
 class Direction:
 
     N = 0

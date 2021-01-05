@@ -1,69 +1,71 @@
-def hsv_to_rgb(H, S=1.0, V=1.0):
-    H %= 360
+def hsv_to_rgb(h, s=1.0, v=1.0):
+    h %= 360
 
-    C = V * S
-    X = C * (1 - abs((H / 60) % 2 - 1))
-    m = V - C
+    c = v * s
+    x = c * (1 - abs((h / 60) % 2 - 1))
+    m = v - c
 
     _R = 0
     _G = 0
     _B = 0
 
-    if 0 <= H < 60:
-        _R = C
-        _G = X
-    elif 60 <= H < 120:
-        _R = X
-        _G = C
-    elif 120 <= H < 180:
-        _G = C
-        _B = X
-    elif 180 <= H < 240:
-        _G = X
-        _B = C
-    elif 240 <= H < 300:
-        _R = X
-        _B = C
-    elif 300 <= H < 360:
-        _R = C
-        _B = X
+    if 0 <= h < 60:
+        _R = c
+        _G = x
+    elif 60 <= h < 120:
+        _R = x
+        _G = c
+    elif 120 <= h < 180:
+        _G = c
+        _B = x
+    elif 180 <= h < 240:
+        _G = x
+        _B = c
+    elif 240 <= h < 300:
+        _R = x
+        _B = c
+    elif 300 <= h < 360:
+        _R = c
+        _B = x
 
-    R = int((_R + m) * 255)
-    G = int((_G + m) * 255)
-    B = int((_B + m) * 255)
+    r = int((_R + m) * 255)
+    g = int((_G + m) * 255)
+    b = int((_B + m) * 255)
 
-    return R, G, B
+    return r, g, b
 
 
 def rgb_to_hsv(rgb):
 
-    R = rgb[0] / 255.0
-    G = rgb[1] / 255.0
-    B = rgb[2] / 255.0
+    r = rgb[0] / 255.0
+    g = rgb[1] / 255.0
+    b = rgb[2] / 255.0
 
-    cmax = max(R, G, B)
-    cmin = min(R, G, B)
+    cmax = max(r, g, b)
+    cmin = min(r, g, b)
     diff = cmax - cmin
 
+    h = 0
     if cmax == cmin:
-        H = 0
-    elif cmax == R:
-        H = (60 * ((G - B) / diff) + 360) % 360
-    elif cmax == G:
-        H = (60 * ((B - R) / diff) + 120) % 360
-    elif cmax == B:
-        H = (60 * ((R - G) / diff) + 240) % 360
+        h = 0
+    elif cmax == r:
+        h = (60 * ((g - b) / diff) + 360) % 360
+    elif cmax == g:
+        h = (60 * ((b - r) / diff) + 120) % 360
+    elif cmax == b:
+        h = (60 * ((r - g) / diff) + 240) % 360
 
     if cmax == 0:
-        S = 0
+        s = 0
     else:
-        S = diff / cmax
+        s = diff / cmax
 
-    V = cmax
+    v = cmax
 
-    return H, S, V
+    return h, s, v
 
-def RGB_to_color(r, g, b):
+
+def rgb_to_color(r, g, b):
     """Convert three 8-bit red, green, blue component values to a single 24-bit
     color value.
     """

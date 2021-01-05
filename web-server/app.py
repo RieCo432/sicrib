@@ -17,18 +17,18 @@ fx_params = {"hue_color_span": {
                 "compress": 1,
                 "start_index": 0
                 },
-            "static": {
+             "static": {
                 "red": 255,
                 "green": 255,
                 "blue": 255,
                 "include_horizontal": True,
                 "include_vertical": True
                 }
-            }
+             }
 
 fx_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "fx_config.json")
-doorway_states_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "doorway_states.json")
-
+doorway_states_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share",
+                                   "doorway_states.json")
 
 
 def get_current_fx_data():
@@ -38,12 +38,13 @@ def get_current_fx_data():
         except ValueError:
             pass
 
+
 def set_current_doorway_states(doorway_states):
     while True:
         try:
             json.dump(doorway_states, open(doorway_states_path, "w"))
             break
-        except:
+        except ValueError:
             pass
 
 
@@ -190,6 +191,7 @@ def set_doorway_state():
     set_current_doorway_states(doorway_states)
 
     return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80, debug=True)

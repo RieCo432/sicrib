@@ -9,8 +9,8 @@ from random import randint
 
 class Room:
 
-    def __init__(self, num_leds, short, length, height, s0, s45, s90, s135, s180, s225, s270, s315, init_philips_hue=False,
-                 philips_hue_ip="0.0.0.0", light_names=None):
+    def __init__(self, short, length, height, s0, s45, s90, s135, s180, s225, s270, s315,
+                 init_philips_hue=False, philips_hue_ip="0.0.0.0", light_names=None):
 
         # if no light names are specified, replace with empty list
         if light_names is None:
@@ -42,10 +42,10 @@ class Room:
                 import RPi.GPIO as GPIO
                 import Adafruit_WS2801 as af
                 import Adafruit_GPIO.SPI as SPI
-                SPI_PORT = 0
-                SPI_DEVICE = 0
+                spi_port = 0
+                spi_device = 0
 
-                self.leds = af.WS2801Pixels(self.num_leds, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE), gpio=GPIO)
+                self.leds = af.WS2801Pixels(self.num_leds, spi=SPI.SpiDev(spi_port, spi_device), gpio=GPIO)
             self.demo = False
         except ImportError:
             print("running in demo mode")
@@ -175,8 +175,6 @@ class Room:
     def update(self):
         if not self.demo:
             self.leds.show()
-        #else:
-        #    print(self.leds)
 
     def set_led_rgb(self, led_num, color):
         self.leds_hsv_colors[led_num] = color_helper.rgb_to_hsv(color)
@@ -202,10 +200,9 @@ class Room:
 
     def apply_brightness(self):
         for led_num in range(self.num_leds):
-            color = (self.leds_hsv_colors[led_num][0], self.leds_hsv_colors[led_num][1], self.leds_hsv_colors[led_num][2] * self.brightness)
+            color = (self.leds_hsv_colors[led_num][0], self.leds_hsv_colors[led_num][1],
+                     self.leds_hsv_colors[led_num][2] * self.brightness)
             self.set_led_hsv(led_num, color)
-
-
 
     # # turn off hue lights
     # def hue_off(self):
@@ -221,7 +218,8 @@ class Room:
     # speed is how many seconds each color should take for one rotation
     # starting hue determines which color is used at the main point, hue is in degrees (0 is red, 120 is green,
     # 240 is green)
-    def set_hue_span_color_rainbow(self, list_of_leds, start_index=0, starting_hue=0.0, ending_hue=360.0, speed=60, compress=1, time_elapsed=0):
+    def set_hue_span_color_rainbow(self, list_of_leds, starting_hue=0.0, ending_hue=360.0, speed=60,
+                                   compress=1, time_elapsed=0):
 
         total_elements = len(list_of_leds)
         hue_diff = ending_hue - starting_hue
@@ -232,9 +230,9 @@ class Room:
             hue_shift_per_second = 0
         hue_diff_element = total_degrees / total_elements
         
-        if abs(hue_diff)%360 != 0:
+        if abs(hue_diff) % 360 != 0:
             hue_diff_element *= 2
-            hue_center = (ending_hue - starting_hue) / 2
+            # hue_center = (ending_hue - starting_hue) / 2
 
         # find index of starting led in list and shift backwards so starting LED is at the beginning
         # list_of_leds.shiftBackwardN(start_index)
@@ -247,7 +245,8 @@ class Room:
                 if abs(hue_diff) % 360 == 0:
                     hue = (starting_hue + hue_diff_element * element_index + time_elapsed * hue_shift_per_second) % 360
                 else:
-                    hue = (hue_diff_element * element_index + time_elapsed * hue_shift_per_second) % (2 * hue_diff) + starting_hue
+                    hue = (hue_diff_element * element_index + time_elapsed * hue_shift_per_second) % (2 * hue_diff) + \
+                          starting_hue
                     if hue > ending_hue:
                         excess = hue - ending_hue
                         hue = ending_hue - excess
@@ -296,7 +295,7 @@ class Room:
                     color = (0, 255, 0)
                 self.set_led_rgb(i, color)
 
-            ceiling_led_list.shiftForward()
+            ceiling_led_list.shift_forward()
             last_ceiling_stamp = datetime.now()
 
         if (datetime.now() - last_vertical_stamp).total_seconds() >= 0.05:
@@ -307,8 +306,3 @@ class Room:
             last_vertical_stamp = datetime.now()
 
         return last_ceiling_stamp, last_vertical_stamp
-
-
-
-
-

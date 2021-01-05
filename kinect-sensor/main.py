@@ -26,7 +26,8 @@ for frame_type, frame in device:
         hallway_door_person = frame_mm[hallway_door_person_location['y1']:hallway_door_person_location['y2'],
                                        hallway_door_person_location['x1']:hallway_door_person_location['x2']]
         hallway_door_person_flat = hallway_door_person.flatten()
-        hallway_door_person_relevant = [x for x in hallway_door_person_flat if hallway_door_frame_dist - 1000 < x < hallway_door_frame_dist + 1000]
+        hallway_door_person_relevant = [x for x in hallway_door_person_flat if hallway_door_frame_dist - 1000 < x <
+                                        hallway_door_frame_dist + 1000]
 
         print(hallway_door_person_relevant)
 
@@ -42,7 +43,8 @@ for frame_type, frame in device:
 
             progress = int(abs(dist_person_to_hallway_door / 1000)*100) / 100.0
 
-            doorway_states = {"kitchen": {"direction": 0, "progress": 0}, "hallway": {"direction": direction, "progress": progress}}
+            doorway_states = {"kitchen": {"direction": 0, "progress": 0}, "hallway": {"direction": direction,
+                                                                                      "progress": progress}}
 
         else:
             doorway_states = {"kitchen": {"direction": 0, "progress": 0},
@@ -52,8 +54,6 @@ for frame_type, frame in device:
             response = requests.post('http://192.168.178.11/setdoorwaystate', json=doorway_states)
 
             print("Status code: ", response.status_code)
-            #print("Printing Entire Post Request")
-            #print(response.json())
 
         frame_disp = cv.cvtColor((frame_mm / 8000.0 * 255).astype(np.uint8), cv.COLOR_GRAY2BGR)
         cv.rectangle(frame_disp, (hallway_door_person_location['x1'], hallway_door_person_location['y1']),

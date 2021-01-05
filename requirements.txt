@@ -4,6 +4,7 @@ Flask-WTF==0.14.3
 itsdangerous==1.1.0
 Jinja2==2.11.2
 MarkupSafe==1.1.1
+numpy==1.19.4
 phue==1.1
 pygame==2.0.1
 six==1.15.0
