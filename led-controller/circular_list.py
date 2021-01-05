@@ -4,11 +4,9 @@ from collections import MutableSequence
 
 class CircularList(MutableSequence):
 
-    @abstractmethod
     def __delitem__(self, i):
         pass
 
-    @abstractmethod
     def __len__(self):
         return len(self._data)
 

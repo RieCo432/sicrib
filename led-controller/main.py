@@ -137,8 +137,6 @@ while True:
                     led_list.append(ceiling_leds)
 
             living_room.set_hue_span_color_rainbow(led_list,
-                                                   start_index=fx_config["effect_params"]["hue_color_span"]
-                                                   ["start_index"],
                                                    compress=fx_config["effect_params"]["hue_color_span"]["compress"],
                                                    speed=fx_config["effect_params"]["hue_color_span"]["speed"],
                                                    starting_hue=fx_config["effect_params"]["hue_color_span"]
