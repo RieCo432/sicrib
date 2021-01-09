@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
 from flask import Flask, render_template, flash, redirect, url_for, request
-from forms import HueColorSpanForm, DoorwayTrackerForm, IndexForm, StaticForm, EpilepsyForm
+from forms import HueColorSpanForm, DoorwayTrackerForm, IndexForm, StaticForm, EpilepsyForm, RaveForm
 import json
 import os
 
@@ -174,6 +174,60 @@ def set_epilepsy():
         form.include_black.data = fx_config["effect_params"]["epilepsy"]["include_black"]
 
         return render_template("epilepsy.html", form=form)
+
+
+@app.route("/setrave", methods=["GET", "POST"])
+def set_rave():
+    fx_config = get_current_fx_data()
+    form = RaveForm()
+    if form.validate_on_submit():
+        flash("Effect paramters accepted")
+        fx_config["effect_params"]["rave"]["include_n"] = form.include_n.data
+        fx_config["effect_params"]["rave"]["include_ne"] = form.include_ne.data
+        fx_config["effect_params"]["rave"]["include_e"] = form.include_e.data
+        fx_config["effect_params"]["rave"]["include_se"] = form.include_se.data
+        fx_config["effect_params"]["rave"]["include_s"] = form.include_s.data
+        fx_config["effect_params"]["rave"]["include_sw"] = form.include_sw.data
+        fx_config["effect_params"]["rave"]["include_w"] = form.include_w.data
+        fx_config["effect_params"]["rave"]["include_nw"] = form.include_nw.data
+
+        fx_config["effect_params"]["rave"]["include_red"] = form.include_red.data
+        fx_config["effect_params"]["rave"]["include_green"] = form.include_green.data
+        fx_config["effect_params"]["rave"]["include_blue"] = form.include_blue.data
+        fx_config["effect_params"]["rave"]["include_turquoise"] = form.include_turquoise.data
+        fx_config["effect_params"]["rave"]["include_yellow"] = form.include_yellow.data
+        fx_config["effect_params"]["rave"]["include_magenta"] = form.include_magenta.data
+        fx_config["effect_params"]["rave"]["include_white"] = form.include_white.data
+        fx_config["effect_params"]["rave"]["include_black"] = form.include_black.data
+
+        fx_config["effect_params"]["rave"]["min_edges"] = form.min_edges.data
+        fx_config["effect_params"]["rave"]["max_edges"] = form.max_edges.data
+
+        set_current_fx_data(fx_config)
+        return redirect(url_for("index"))
+    else:
+        form.include_n.data = fx_config["effect_params"]["rave"]["include_n"]
+        form.include_ne.data = fx_config["effect_params"]["rave"]["include_ne"]
+        form.include_e.data = fx_config["effect_params"]["rave"]["include_e"]
+        form.include_se.data = fx_config["effect_params"]["rave"]["include_se"]
+        form.include_s.data = fx_config["effect_params"]["rave"]["include_s"]
+        form.include_sw.data = fx_config["effect_params"]["rave"]["include_sw"]
+        form.include_w.data = fx_config["effect_params"]["rave"]["include_w"]
+        form.include_nw.data = fx_config["effect_params"]["rave"]["include_nw"]
+
+        form.include_red.data = fx_config["effect_params"]["rave"]["include_red"]
+        form.include_green.data = fx_config["effect_params"]["rave"]["include_green"]
+        form.include_blue.data = fx_config["effect_params"]["rave"]["include_blue"]
+        form.include_turquoise.data = fx_config["effect_params"]["rave"]["include_turquoise"]
+        form.include_yellow.data = fx_config["effect_params"]["rave"]["include_yellow"]
+        form.include_magenta.data = fx_config["effect_params"]["rave"]["include_magenta"]
+        form.include_white.data = fx_config["effect_params"]["rave"]["include_white"]
+        form.include_black.data = fx_config["effect_params"]["rave"]["include_black"]
+
+        form.min_edges.data = fx_config["effect_params"]["rave"]["min_edges"]
+        form.max_edges.data = fx_config["effect_params"]["rave"]["max_edges"]
+
+        return render_template("rave.html", form=form)
 
 
 @app.route("/setdoorwaytracker", methods=["GET", "POST"])

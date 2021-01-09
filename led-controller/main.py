@@ -11,6 +11,7 @@ from os import environ
 from compass import Direction
 import sys
 import math
+from time import sleep
 from random import randint
 
 living_room = build_living_room()
@@ -245,6 +246,51 @@ while True:
             if fx_config["effect_params"]["epilepsy"]["include_nw"]:
                 color = colors[randint(0, len(colors)-1)]
                 for led_num in living_room.north_west.leds:
+                    living_room.set_led_rgb(led_num, color)
+
+        elif fx_config["effect"] == "rave":
+            for led_num in range(living_room.num_leds):
+                living_room.set_led_rgb(led_num, (0, 0, 0))
+            colors = []
+            edges = []
+            if fx_config["effect_params"]["rave"]["include_red"]:
+                colors.append((255, 0, 0))
+            if fx_config["effect_params"]["rave"]["include_green"]:
+                colors.append((0, 255, 0))
+            if fx_config["effect_params"]["rave"]["include_blue"]:
+                colors.append((0, 0, 255))
+            if fx_config["effect_params"]["rave"]["include_white"]:
+                colors.append((255, 255, 255))
+            if fx_config["effect_params"]["rave"]["include_black"]:
+                colors.append((0, 0, 0))
+            if fx_config["effect_params"]["rave"]["include_turquoise"]:
+                colors.append((0, 255, 255))
+            if fx_config["effect_params"]["rave"]["include_yellow"]:
+                colors.append((255, 255, 0))
+            if fx_config["effect_params"]["rave"]["include_magenta"]:
+                colors.append((255, 0, 255))
+
+            if fx_config["effect_params"]["rave"]["include_n"]:
+                edges.append(living_room.north)
+            if fx_config["effect_params"]["rave"]["include_ne"]:
+                edges.append(living_room.north_east)
+            if fx_config["effect_params"]["rave"]["include_e"]:
+                edges.append(living_room.east)
+            if fx_config["effect_params"]["rave"]["include_se"]:
+                edges.append(living_room.south_east)
+            if fx_config["effect_params"]["rave"]["include_s"]:
+                edges.append(living_room.south)
+            if fx_config["effect_params"]["rave"]["include_sw"]:
+                edges.append(living_room.south_west)
+            if fx_config["effect_params"]["rave"]["include_w"]:
+                edges.append(living_room.west)
+            if fx_config["effect_params"]["rave"]["include_nw"]:
+                edges.append(living_room.north_west)
+
+            for i in range(randint(fx_config["effect_params"]["rave"]["min_edges"],
+                                   fx_config["effect_params"]["rave"]["max_edges"])):
+                color = colors[randint(0, len(colors)-1)]
+                for led_num in edges[randint(0, len(edges)-1)].leds:
                     living_room.set_led_rgb(led_num, color)
 
         elif fx_config["effect"] == "none":

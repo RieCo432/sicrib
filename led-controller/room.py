@@ -49,7 +49,6 @@ class Room:
             self.demo = False
         except ImportError:
             print("running in demo mode")
-            time.sleep(1)
             self.demo = True
             self.leds = [(0, 0, 0)] * self.num_leds
 

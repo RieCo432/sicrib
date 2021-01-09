@@ -7,7 +7,7 @@ class IndexForm(FlaskForm):
     enabled = BooleanField("enabled")
     brightness = DecimalField("brightness")
     effect = RadioField("effect", choices=["hue_color_span_rainbow", "hue_color_span_cycle",
-                                           "christmas_animation", "static", "epilepsy", "none"])
+                                           "christmas_animation", "static", "epilepsy", "rave", "none"])
     submit = SubmitField("Apply")
 
 
@@ -41,6 +41,31 @@ class EpilepsyForm(FlaskForm):
     include_magenta = BooleanField("Include Magenta")
     include_black = BooleanField("Include Black")
     include_white = BooleanField("Include White")
+
+    submit = SubmitField("Apply")
+
+
+class RaveForm(FlaskForm):
+    include_n = BooleanField("Include North")
+    include_ne = BooleanField("Include North East")
+    include_e = BooleanField("Include East")
+    include_se = BooleanField("Include South East")
+    include_s = BooleanField("Include South")
+    include_sw = BooleanField("Include South West")
+    include_w = BooleanField("Include West")
+    include_nw = BooleanField("Include North West")
+
+    include_red = BooleanField("Include Red")
+    include_green = BooleanField("Include Green")
+    include_blue = BooleanField("Include Blue")
+    include_turquoise = BooleanField("Include Turquoise")
+    include_yellow = BooleanField("Include Yellow")
+    include_magenta = BooleanField("Include Magenta")
+    include_black = BooleanField("Include Black")
+    include_white = BooleanField("Include White")
+
+    min_edges = IntegerField("Minimum edges")
+    max_edges = IntegerField("Maximum edges")
 
     submit = SubmitField("Apply")
 
