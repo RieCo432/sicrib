@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
 from flask import Flask, render_template, flash, redirect, url_for, request
-from forms import HueColorSpanForm, DoorwayTrackerForm, IndexForm, StaticForm, EpilepsyForm, RaveForm
+from forms import HueColorSpanForm, DoorwayTrackerForm, IndexForm, StaticForm, RaveForm
 import json
 import os
 
