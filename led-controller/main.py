@@ -194,60 +194,6 @@ while True:
                                                      "ending_hue"],
                                                  time_elapsed=time_elapsed)
 
-        elif fx_config["effect"] == "epilepsy":
-            # start by wiping all previous colors
-            for led_num in range(living_room.num_leds):
-                living_room.set_led_rgb(led_num, (0, 0, 0))
-            colors = []
-            if fx_config["effect_params"]["epilepsy"]["include_red"]:
-                colors.append((255, 0, 0))
-            if fx_config["effect_params"]["epilepsy"]["include_green"]:
-                colors.append((0, 255, 0))
-            if fx_config["effect_params"]["epilepsy"]["include_blue"]:
-                colors.append((0, 0, 255))
-            if fx_config["effect_params"]["epilepsy"]["include_white"]:
-                colors.append((255, 255, 255))
-            if fx_config["effect_params"]["epilepsy"]["include_black"]:
-                colors.append((0, 0, 0))
-            if fx_config["effect_params"]["epilepsy"]["include_turquoise"]:
-                colors.append((0, 255, 255))
-            if fx_config["effect_params"]["epilepsy"]["include_yellow"]:
-                colors.append((255, 255, 0))
-            if fx_config["effect_params"]["epilepsy"]["include_magenta"]:
-                colors.append((255, 0, 255))
-            if fx_config["effect_params"]["epilepsy"]["include_n"]:
-                color = colors[randint(0, len(colors)-1)]
-                for led_num in living_room.north.leds:
-                    living_room.set_led_rgb(led_num, color)
-            if fx_config["effect_params"]["epilepsy"]["include_ne"]:
-                color = colors[randint(0, len(colors)-1)]
-                for led_num in living_room.north_east.leds:
-                    living_room.set_led_rgb(led_num, color)
-            if fx_config["effect_params"]["epilepsy"]["include_e"]:
-                color = colors[randint(0, len(colors)-1)]
-                for led_num in living_room.east.leds:
-                    living_room.set_led_rgb(led_num, color)
-            if fx_config["effect_params"]["epilepsy"]["include_se"]:
-                color = colors[randint(0, len(colors)-1)]
-                for led_num in living_room.south_east.leds:
-                    living_room.set_led_rgb(led_num, color)
-            if fx_config["effect_params"]["epilepsy"]["include_s"]:
-                color = colors[randint(0, len(colors)-1)]
-                for led_num in living_room.south.leds:
-                    living_room.set_led_rgb(led_num, color)
-            if fx_config["effect_params"]["epilepsy"]["include_sw"]:
-                color = colors[randint(0, len(colors)-1)]
-                for led_num in living_room.south_west.leds:
-                    living_room.set_led_rgb(led_num, color)
-            if fx_config["effect_params"]["epilepsy"]["include_w"]:
-                color = colors[randint(0, len(colors)-1)]
-                for led_num in living_room.west.leds:
-                    living_room.set_led_rgb(led_num, color)
-            if fx_config["effect_params"]["epilepsy"]["include_nw"]:
-                color = colors[randint(0, len(colors)-1)]
-                for led_num in living_room.north_west.leds:
-                    living_room.set_led_rgb(led_num, color)
-
         elif fx_config["effect"] == "rave":
             for led_num in range(living_room.num_leds):
                 living_room.set_led_rgb(led_num, (0, 0, 0))

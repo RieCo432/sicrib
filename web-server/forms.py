@@ -7,7 +7,7 @@ class IndexForm(FlaskForm):
     enabled = BooleanField("enabled")
     brightness = DecimalField("brightness")
     effect = RadioField("effect", choices=["hue_color_span_rainbow", "hue_color_span_cycle",
-                                           "christmas_animation", "static", "epilepsy", "rave", "none"])
+                                           "christmas_animation", "static", "rave", "none"])
     submit = SubmitField("Apply")
 
 
@@ -15,33 +15,11 @@ class HueColorSpanForm(FlaskForm):
     start_index = IntegerField("start_index")  # , validators=[DataRequired()])
     starting_hue = DecimalField("Starting Hue")  # , validators=[DataRequired()])
     ending_hue = DecimalField("Ending Hue")  # , validators=[DataRequired()])
-    speed = DecimalField("Speed")  # , validators=[DataRequired()])
+    period = DecimalField("Period")  # , validators=[DataRequired()])
     compress = IntegerField("Compress")  # , validators=[DataRequired()])
     direction = RadioField("Direction", choices=["horizontal", "vertical"])
     include_vertical = BooleanField("include_vertical")
     include_horizontal = BooleanField("include_horizontal")
-    submit = SubmitField("Apply")
-
-
-class EpilepsyForm(FlaskForm):
-    include_n = BooleanField("Include North")
-    include_ne = BooleanField("Include North East")
-    include_e = BooleanField("Include East")
-    include_se = BooleanField("Include South East")
-    include_s = BooleanField("Include South")
-    include_sw = BooleanField("Include South West")
-    include_w = BooleanField("Include West")
-    include_nw = BooleanField("Include North West")
-
-    include_red = BooleanField("Include Red")
-    include_green = BooleanField("Include Green")
-    include_blue = BooleanField("Include Blue")
-    include_turquoise = BooleanField("Include Turquoise")
-    include_yellow = BooleanField("Include Yellow")
-    include_magenta = BooleanField("Include Magenta")
-    include_black = BooleanField("Include Black")
-    include_white = BooleanField("Include White")
-
     submit = SubmitField("Apply")
 
 

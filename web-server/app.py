@@ -13,7 +13,7 @@ app.config['SECRET_KEY'] = 'you-will-never-guess'
 fx_params = {"hue_color_span": {
                 "starting_hue": 0.0,
                 "ending_hue": 360.0,
-                "speed": 60,
+                "period": 60,
                 "compress": 1,
                 "start_index": 0
                 },
@@ -85,7 +85,7 @@ def set_hue_color_span():
         fx_config["effect_params"]["hue_color_span"]["start_index"] = form.start_index.data
         fx_config["effect_params"]["hue_color_span"]["starting_hue"] = float(form.starting_hue.data)
         fx_config["effect_params"]["hue_color_span"]["ending_hue"] = float(form.ending_hue.data)
-        fx_config["effect_params"]["hue_color_span"]["speed"] = float(form.speed.data)
+        fx_config["effect_params"]["hue_color_span"]["period"] = float(form.period.data)
         fx_config["effect_params"]["hue_color_span"]["compress"] = form.compress.data
         fx_config["effect_params"]["hue_color_span"]["direction"] = form.direction.data
         fx_config["effect_params"]["hue_color_span"]["include_vertical"] = form.include_vertical.data
@@ -96,7 +96,7 @@ def set_hue_color_span():
         form.start_index.data = fx_config["effect_params"]["hue_color_span"]["start_index"]
         form.starting_hue.data = fx_config["effect_params"]["hue_color_span"]["starting_hue"]
         form.ending_hue.data = fx_config["effect_params"]["hue_color_span"]["ending_hue"]
-        form.speed.data = fx_config["effect_params"]["hue_color_span"]["speed"]
+        form.period.data = fx_config["effect_params"]["hue_color_span"]["period"]
         form.compress.data = fx_config["effect_params"]["hue_color_span"]["compress"]
         form.direction.data = fx_config["effect_params"]["hue_color_span"]["direction"]
         form.include_vertical.data = fx_config["effect_params"]["hue_color_span"]["include_vertical"]
@@ -126,54 +126,6 @@ def set_static():
         form.include_vertical.data = fx_config["effect_params"]["static"]["include_vertical"]
 
         return render_template("static.html", form=form)
-
-
-@app.route("/setepilepsy", methods=["GET", "POST"])
-def set_epilepsy():
-    fx_config = get_current_fx_data()
-    form = EpilepsyForm()
-    if form.validate_on_submit():
-        flash("Effect paramters accepted")
-        fx_config["effect_params"]["epilepsy"]["include_n"] = form.include_n.data
-        fx_config["effect_params"]["epilepsy"]["include_ne"] = form.include_ne.data
-        fx_config["effect_params"]["epilepsy"]["include_e"] = form.include_e.data
-        fx_config["effect_params"]["epilepsy"]["include_se"] = form.include_se.data
-        fx_config["effect_params"]["epilepsy"]["include_s"] = form.include_s.data
-        fx_config["effect_params"]["epilepsy"]["include_sw"] = form.include_sw.data
-        fx_config["effect_params"]["epilepsy"]["include_w"] = form.include_w.data
-        fx_config["effect_params"]["epilepsy"]["include_nw"] = form.include_nw.data
-
-        fx_config["effect_params"]["epilepsy"]["include_red"] = form.include_red.data
-        fx_config["effect_params"]["epilepsy"]["include_green"] = form.include_green.data
-        fx_config["effect_params"]["epilepsy"]["include_blue"] = form.include_blue.data
-        fx_config["effect_params"]["epilepsy"]["include_turquoise"] = form.include_turquoise.data
-        fx_config["effect_params"]["epilepsy"]["include_yellow"] = form.include_yellow.data
-        fx_config["effect_params"]["epilepsy"]["include_magenta"] = form.include_magenta.data
-        fx_config["effect_params"]["epilepsy"]["include_white"] = form.include_white.data
-        fx_config["effect_params"]["epilepsy"]["include_black"] = form.include_black.data
-
-        set_current_fx_data(fx_config)
-        return redirect(url_for("index"))
-    else:
-        form.include_n.data = fx_config["effect_params"]["epilepsy"]["include_n"]
-        form.include_ne.data = fx_config["effect_params"]["epilepsy"]["include_ne"]
-        form.include_e.data = fx_config["effect_params"]["epilepsy"]["include_e"]
-        form.include_se.data = fx_config["effect_params"]["epilepsy"]["include_se"]
-        form.include_s.data = fx_config["effect_params"]["epilepsy"]["include_s"]
-        form.include_sw.data = fx_config["effect_params"]["epilepsy"]["include_sw"]
-        form.include_w.data = fx_config["effect_params"]["epilepsy"]["include_w"]
-        form.include_nw.data = fx_config["effect_params"]["epilepsy"]["include_nw"]
-
-        form.include_red.data = fx_config["effect_params"]["epilepsy"]["include_red"]
-        form.include_green.data = fx_config["effect_params"]["epilepsy"]["include_green"]
-        form.include_blue.data = fx_config["effect_params"]["epilepsy"]["include_blue"]
-        form.include_turquoise.data = fx_config["effect_params"]["epilepsy"]["include_turquoise"]
-        form.include_yellow.data = fx_config["effect_params"]["epilepsy"]["include_yellow"]
-        form.include_magenta.data = fx_config["effect_params"]["epilepsy"]["include_magenta"]
-        form.include_white.data = fx_config["effect_params"]["epilepsy"]["include_white"]
-        form.include_black.data = fx_config["effect_params"]["epilepsy"]["include_black"]
-
-        return render_template("epilepsy.html", form=form)
 
 
 @app.route("/setrave", methods=["GET", "POST"])
