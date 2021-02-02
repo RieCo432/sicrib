@@ -27,12 +27,11 @@ class Room {
 		int * horizontal_clockwise[4] = {south, west, north, east};
 			
 		int * list_of_leds[NUM_LEDS];
-		int list_of_leds_elements;
+		int list_of_leds_length;
 
     CRGB leds[NUM_LEDS];
 
     Room() {
-      Serial.begin(9600);
       FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
     }
 
@@ -59,6 +58,10 @@ class Room {
     }
 	
 		void build_list_circle_horizontal(bool include_vertical, bool include_horizontal) {
+      list_of_leds_length = 0;
+      if (include_vertical) list_of_leds_length += 4;
+      if (include_horizontal) list_of_leds_length += 2 * SHORT_LENGTH + 2 * LONG_LENGTH;
+    
 			for (int i = 0; i < NUM_LEDS; i++) {
 			  list_of_leds[i] = NULL;
 			}
@@ -128,6 +131,10 @@ class Room {
 		};
 
     void build_list_straight_vertical(bool include_vertical, bool include_horizontal) {
+      list_of_leds_length = 0;
+      if (include_vertical) list_of_leds_length += VERTICAL_LENGTH;
+      if (include_horizontal) list_of_leds_length += 1;
+      
       for (int i = 0; i < NUM_LEDS; i++) {
         list_of_leds[i] = NULL;
       }
@@ -136,64 +143,41 @@ class Room {
   
       if (include_vertical) {
         for (int i = 0; i < VERTICAL_LENGTH; i++) {
-          int *small_list = (int*) malloc(2 * sizeof(int));
+          int *small_list = (int*) malloc(5 * sizeof(int));
           small_list[0] = south_east[i];
-          small_list[1] = -1;
+          small_list[1] = south_west[i];
+          small_list[2] = north_west[i];
+          small_list[3] = north_east[i];
+          small_list[4] = -1;
           list_of_leds[list_index] = small_list;
           list_index++;
         }
       }
 
       if (include_horizontal) {
-        list_of_leds[list_index] = south;
-        list_index++;
-      }
-
-      if (include_vertical) {
-        for (int i = 0; i < VERTICAL_LENGTH; i++) {
-          int *small_list = (int*) malloc(2 * sizeof(int));
-          small_list[0] = south_west[i];
-          small_list[1] = -1;
-          list_of_leds[list_index] = small_list;
-          list_index++;
+        int *small_list = (int*) malloc((2 * LONG_LENGTH + 2 * SHORT_LENGTH + 1) * sizeof(int));
+        int led_index = 0;
+        for (int i = 0; i < SHORT_LENGTH; i++) {
+          small_list[led_index] = west[i];
+          led_index++;
+          small_list[led_index] = east[i];
+          led_index++;
         }
-      }
 
-      if (include_horizontal) {
-        list_of_leds[list_index] = west;
-        list_index++;
-      }
-
-      if (include_vertical) {
-        for (int i = 0; i < VERTICAL_LENGTH; i++) {
-          int *small_list = (int*) malloc(2 * sizeof(int));
-          small_list[0] = north_west[i];
-          small_list[1] = -1;
-          list_of_leds[list_index] = small_list;
-          list_index++;
+        for (int i = 0; i < LONG_LENGTH; i++) {
+          small_list[led_index] = south[i];
+          led_index++;
+          small_list[led_index] = north[i];
+          led_index++;
         }
-      }
 
-      if (include_horizontal) {
-        list_of_leds[list_index] = north;
+        small_list[led_index] = -1;
+        list_of_leds[list_index] = small_list;
         list_index++;
       }
+    }
 
-      if (include_vertical) {
-        for (int i = 0; i < VERTICAL_LENGTH; i++) {
-          int *small_list = (int*) malloc(2 * sizeof(int));
-          small_list[0] = north_east[i];
-          small_list[1] = -1;
-          list_of_leds[list_index] = small_list;
-          list_index++;
-        }
-      }
-
-      if (include_horizontal) {
-        list_of_leds[list_index] = east;
-        list_index++;
-      }
-    };
+      
 
 		void print_circle_list_indexes() {
 			std::string res = "";
@@ -209,9 +193,11 @@ class Room {
 		};
 
     void build_list_single_element(bool include_vertical, bool include_horizontal) {
+      list_of_leds_length = 1;
+      
       int number_of_leds_in_element = 1;
-      if (include_horizontal) number_of_leds_in_element += 2*LONG_LENGTH + 2*SHORT_LENGTH;
-      if (include_vertical) number_of_leds_in_element += 4;
+      if (include_horizontal) number_of_leds_in_element += 2 * LONG_LENGTH + 2 * SHORT_LENGTH;
+      if (include_vertical) number_of_leds_in_element += 4 * VERTICAL_LENGTH;
     
       for (int i = 0; i < NUM_LEDS; i++) {
         list_of_leds[i] = NULL;
@@ -225,24 +211,28 @@ class Room {
         int edge_index = 0;
         while (south_east[edge_index] != -1) {
           list_of_leds[0][list_index] = south_east[edge_index];
+          edge_index++;
           list_index++;
         }
 
         edge_index = 0;
         while (south_west[edge_index] != -1) {
           list_of_leds[0][list_index] = south_west[edge_index];
+          edge_index++;
           list_index++;
         }
 
         edge_index = 0;
         while (north_west[edge_index] != -1) {
           list_of_leds[0][list_index] = north_west[edge_index];
+          edge_index++;
           list_index++;
         }
 
         edge_index = 0;
         while (north_east[edge_index] != -1) {
           list_of_leds[0][list_index] = north_east[edge_index];
+          edge_index++;
           list_index++;
         }
       }
@@ -252,24 +242,28 @@ class Room {
         int edge_index = 0;
         while (south[edge_index] != -1) {
           list_of_leds[0][list_index] = south[edge_index];
+          edge_index++;
           list_index++;
         }
 
         edge_index = 0;
         while (west[edge_index] != -1) {
           list_of_leds[0][list_index] = west[edge_index];
+          edge_index++;
           list_index++;
         }
 
         edge_index = 0;
         while (north[edge_index] != -1) {
           list_of_leds[0][list_index] = north[edge_index];
+          edge_index++;
           list_index++;
         }
 
         edge_index = 0;
         while (east[edge_index] != -1) {
           list_of_leds[0][list_index] = east[edge_index];
+          edge_index++;
           list_index++;
         }
       }
@@ -286,22 +280,27 @@ class Room {
 			if (period != 0) {
 				hue_shift_per_second = total_degrees / period;
 			};
-			float hue_diff_element = total_degrees / list_of_leds_elements;
-			if (fmod(abs(hue_diff), 360) != 0) hue_diff_element *= 2;
+			float hue_diff_element = total_degrees / list_of_leds_length;
+			if (fmod(abs(hue_diff), 360) != 0) {hue_diff_element *= 2; hue_shift_per_second *= 2;};
+     
 			uint8_t saturation = 255;
 			uint8_t value = 255;
- 
-			for (int element_index = 0; element_index < list_of_leds_elements; element_index++) {
+      
+			for (int element_index = 0; element_index < list_of_leds_length; element_index++) {
+        //Serial.println("inside2");
 				int * inside_list = list_of_leds[element_index];
 				int led_index = 0;
 				while (inside_list[led_index] != -1) {
 					float hue;
 					if (fmod(abs(hue_diff), 360) == 0) hue = fmod((starting_hue + hue_diff_element * element_index + hue_shift_per_second * time_elapsed), 360);
 					else {
-						hue = fmod((hue_diff_element * element_index + hue_shift_per_second * time_elapsed), (2 * hue_diff) + starting_hue);
-						if (hue > ending_hue) {
+						hue = fmod((hue_diff_element * element_index + hue_shift_per_second * time_elapsed), (2 * abs(hue_diff))) + starting_hue;
+						if (hue_diff > 0 && hue > ending_hue) {
 							float excess = hue - ending_hue;
 							hue = ending_hue - excess;
+						} else if (hue_diff < 0 && hue < ending_hue) {
+              float gap = ending_hue - hue;
+              hue = ending_hue + gap;
 						}
 					}
 					uint8_t final_hue = round(255 * (hue / 360.0));
@@ -317,20 +316,24 @@ class Room {
     if (period != 0) {
       hue_shift_per_second = hue_diff / period;
     };
+    if (fmod(abs(hue_diff), 360) != 0) hue_shift_per_second *= 2;
     uint8_t saturation = 255;
     uint8_t value = 255;
     float hue;
     if (fmod(abs(hue_diff), 360) == 0) hue = fmod((starting_hue + hue_shift_per_second * time_elapsed), 360);
     else {
-      hue = fmod((hue_shift_per_second * time_elapsed), (2 * hue_diff) + starting_hue);
-      if (hue > ending_hue) {
+      hue = fmod((hue_shift_per_second * time_elapsed), (2 * abs(hue_diff))) + starting_hue;
+      if (hue_diff > 0 && hue > ending_hue) {
         float excess = hue - ending_hue;
         hue = ending_hue - excess;
+      } else if (hue_diff < 0 && hue < ending_hue) {
+        float gap = ending_hue - hue;
+        hue = ending_hue + gap;
       }
     }
     int led_index = 0;
+    uint8_t final_hue = round(255 * (hue / 360.0));
     while (list_of_leds[0][led_index] != -1) {
-      uint8_t final_hue = round(255 * (hue / 360.0));
       leds[list_of_leds[0][led_index]] = CHSV(final_hue, saturation, value);
       led_index++;
     }

@@ -59,6 +59,8 @@ void setup() {
   HWSerial.setTX(1);
   HWSerial.setRX(0);
   HWSerial.begin(9600);
+
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -66,16 +68,19 @@ void loop() {
     String received = HWSerial.readStringUntil('\n');
     deserializeJson(fx_config, received);
     effect_name =  fx_config["effect"];
+
+    Serial.println(effect_name);
     
     if (strcmp(effect_name, hue_color_span_rainbow) == 0 || strcmp(effect_name, hue_color_span_cycle) == 0) {
       hue_color_span_direction = fx_config["effect_params"]["hue_color_span"]["direction"];
       hue_color_span_starting_hue = fx_config["effect_params"]["hue_color_span"]["starting_hue"];
       hue_color_span_ending_hue = fx_config["effect_params"]["hue_color_span"]["ending_hue"];
       hue_color_span_period = fx_config["effect_params"]["hue_color_span"]["period"];
+      hue_color_span_compress = fx_config["effect_params"]["hue_color_span"]["compress"];
       
       include_vertical = fx_config["effect_params"]["hue_color_span"]["include_vertical"];
       include_horizontal = fx_config["effect_params"]["hue_color_span"]["include_horizontal"];
-
+      
       if (strcmp(effect_name, hue_color_span_rainbow) == 0) {
         if (strcmp(hue_color_span_direction, vertical) == 0) {
           living_room.build_list_straight_vertical(include_vertical, include_horizontal);
@@ -93,29 +98,29 @@ void loop() {
     }
     
     
-    HWSerial.println(effect_name);
+    // HWSerial.println(effect_name);
     // Serial.println(effect_name);
     start_time = millis();
     HWSerial.flush(); 
   }
 
-  if (strcmp(effect_name, hue_color_span_rainbow) == 0) {
+  if (strcmp(effect_name, hue_color_span_rainbow) == 0 && fx_config["enabled"]) {
     
     living_room.set_hue_color_span_rainbow(hue_color_span_starting_hue, hue_color_span_ending_hue, hue_color_span_period, hue_color_span_compress , (float) (millis() - start_time) / 1000.0f);
     
-  } else if (strcmp(effect_name, hue_color_span_cycle) == 0){
+  } else if (strcmp(effect_name, hue_color_span_cycle) == 0 && fx_config["enabled"]){
 
     living_room.set_hue_color_span_cycle(hue_color_span_starting_hue, hue_color_span_ending_hue, hue_color_span_period, (float) (millis() - start_time) / 1000.0f);
     
-  } else if (strcmp(effect_name, christmas_animation) == 0){
+  } else if (strcmp(effect_name, christmas_animation) == 0 && fx_config["enabled"]){
     
-  } else if (strcmp(effect_name, static_color) == 0){
+  } else if (strcmp(effect_name, static_color) == 0 && fx_config["enabled"]){
 
     living_room.set_all_rgb(static_red, static_green, static_blue);
     
-  } else if (strcmp(effect_name, rave) == 0){
+  } else if (strcmp(effect_name, rave) == 0 && fx_config["enabled"]){
     
-  } else if (strcmp(effect_name, audio) == 0){
+  } else if (strcmp(effect_name, audio) == 0 && fx_config["enabled"]){
     
   } else if (strcmp(effect_name, none) == 0 || !fx_config["enabled"]){
     living_room.turn_off();
