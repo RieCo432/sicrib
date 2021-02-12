@@ -11,6 +11,7 @@ const char* hue_color_span_rainbow = "hue_color_span_rainbow";
 const char* hue_color_span_cycle = "hue_color_span_cycle";
 const char* christmas_animation = "christmas_animation";
 const char* static_color = "static";
+const char* alis_random_equilibrium = "alis_random_equilibrium";
 const char* rave = "rave";
 const char* audio = "audio";
 const char* none = "none";
@@ -54,7 +55,7 @@ bool include_vertical = true;
 bool include_horizontal = true;
 
 unsigned long start_time = millis();
-
+int ravecount;
 void setup() {
   HWSerial.setTX(1);
   HWSerial.setRX(0);
@@ -118,8 +119,51 @@ void loop() {
 
     living_room.set_all_rgb(static_red, static_green, static_blue);
     
+  } else if (strcmp(effect_name, alis_random_equilibrium) == 0 && fx_config["enabled"]){
+    ravecount++;
+    if (ravecount == 1000) {
+      ravecount =0;
+      // living_room.turn_off();
+    }
+
+    if (ravecount%3 ==0) {
+      for (int i = 0; i < 4; i++) {
+        int randcolor1 = random(100);
+        int randcolor2 = random(100);
+        int randcolor3 = random(40);
+        int randled = random(790);
+        living_room.set_one_led(255,randcolor2,randcolor3,randled);
+      }
+    }
+    if (ravecount%3 ==1) {
+      for (int i = 0; i < 4; i++) {
+        int randcolor1 = random(100);
+        int randcolor2 = random(255);
+        int randcolor3 = random(40);
+        int randled = random(790);
+        living_room.set_one_led(randcolor1,255,randcolor3,randled);
+      }
+    }
+    if (ravecount%3 ==2) {
+      for (int i = 0; i < 4; i++) {
+        int randcolor1 = random(100);
+        int randcolor2 = random(100);
+        int randcolor3 = random(120);
+        int randled = random(790);
+        living_room.set_one_led(randcolor1,randcolor2,255,randled);
+      }
+
+      for (int i = 0; i < 4; i++) {
+        int randled = random(790);
+        living_room.set_one_led(255,255,255,randled);
+      }
+      for (int i = 0; i < 8; i++) {
+        int randled = random(790);
+        living_room.set_one_led(0,0,0,randled);
+      }  
+    }
   } else if (strcmp(effect_name, rave) == 0 && fx_config["enabled"]){
-    
+ 
   } else if (strcmp(effect_name, audio) == 0 && fx_config["enabled"]){
     
   } else if (strcmp(effect_name, none) == 0 || !fx_config["enabled"]){

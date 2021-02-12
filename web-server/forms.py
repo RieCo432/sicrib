@@ -7,7 +7,7 @@ class IndexForm(FlaskForm):
     enabled = BooleanField("enabled")
     brightness = DecimalField("brightness")
     effect = RadioField("effect", choices=["hue_color_span_rainbow", "hue_color_span_cycle",
-                                           "christmas_animation", "static", "rave", "none"])
+                                           "christmas_animation", "static", "rave", "alis_random_equilibrium", "none"])
     submit = SubmitField("Apply")
 
 

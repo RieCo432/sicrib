@@ -40,7 +40,7 @@ class Room {
         leds[i] = CRGB(0, 0, 0);    
       }
     }
-
+    
     void set_all_hue(uint8_t hue) {
       for (int i = 0; i < NUM_LEDS; i++) {
         leds[i] = CHSV(hue, 255, 255);
@@ -52,7 +52,10 @@ class Room {
         leds[i] = CRGB(red, green, blue);
       }
     }
-
+    
+    void set_one_led(uint8_t red, uint8_t green, uint8_t blue, int lednum) {
+        leds[lednum] = CRGB(red, green, blue);
+    }
     void update(){
       LEDS.show();
     }
