@@ -2,7 +2,6 @@
 #include "Room.cpp"
 #define HWSerial Serial1
 
-
 DynamicJsonDocument fx_config(2048);
 
 Room living_room;
@@ -65,6 +64,13 @@ void setup() {
 }
 
 void loop() {
+  if (Serial.available() > 0) {
+    String received = Serial.readStringUntil('\n');
+    deserializeJson(fx_config, received);
+    effect_name =  fx_config["effect"];
+
+    Serial.println(effect_name);
+  }
   if (HWSerial.available() > 0) {
     String received = HWSerial.readStringUntil('\n');
     deserializeJson(fx_config, received);
@@ -165,6 +171,8 @@ void loop() {
   } else if (strcmp(effect_name, rave) == 0 && fx_config["enabled"]){
  
   } else if (strcmp(effect_name, audio) == 0 && fx_config["enabled"]){
+    
+    living_room.audio_effect();
     
   } else if (strcmp(effect_name, none) == 0 || !fx_config["enabled"]){
     living_room.turn_off();
