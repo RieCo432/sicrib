@@ -146,9 +146,9 @@ def set_audio():
         set_current_fx_data(fx_config)
         return redirect(url_for("index"))
     else:
-        form.bass_bins.data = fx_config["effect_params"]["audio"]["bass_bins"]
-        form.middle_bins.data = fx_config["effect_params"]["audio"]["middle_bins"]
-        form.high_bins.data = fx_config["effect_params"]["audio"]["high_bins"]
+        form.bass_bins.data = str(fx_config["effect_params"]["audio"]["bass_bins"])
+        form.middle_bins.data = str(fx_config["effect_params"]["audio"]["middle_bins"])
+        form.high_bins.data = str(fx_config["effect_params"]["audio"]["high_bins"])
 
         return render_template("audio.html", form=form)
 
