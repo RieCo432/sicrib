@@ -2,6 +2,7 @@
 #include <FastLED.h>
 #include <string>
 #include <math.h>
+#include "arduinoFFT.h"
 
 #define DATA_PIN 11
 #define CLOCK_PIN 13
@@ -10,6 +11,7 @@
 #define VERTICAL_LENGTH  69
 #define SHORT_LENGTH    108
 #define LONG_LENGTH     149
+#define SAMPLES 1024
 
 class Room {
 	public:
@@ -30,6 +32,13 @@ class Room {
 		int list_of_leds_length;
 
     CRGB leds[NUM_LEDS];
+
+    double vReal[SAMPLES];
+    double vImag[SAMPLES];
+    int dc_offset = analogRead(0);
+
+    arduinoFFT FFT = arduinoFFT(); /* Create FFT object */
+    double samplingFrequency;
 
     Room() {
       FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
@@ -340,5 +349,47 @@ class Room {
       leds[list_of_leds[0][led_index]] = CHSV(final_hue, saturation, value);
       led_index++;
     }
+  }
+
+  void audio_effect() {
+    uint32_t x = micros();
+    for (uint16_t i = 0; i < SAMPLES; i++) {
+      vReal[i] = analogRead(0) - dc_offset;
+      vImag[i] = 0.0;
+    }
+    samplingFrequency = SAMPLES / ((micros() - x) / 1000000.0);
+
+    FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);  /* Weigh data */
+    FFT.Compute(vReal, vImag, SAMPLES, FFT_FORWARD); /* Compute FFT */
+    FFT.ComplexToMagnitude(vReal, vImag, SAMPLES); /* Compute magnitudes */
+
+    double bands[3] = {0, 0, 0};
+    for (int i = 1; i <= 4; i++) {
+      bands[0] += vReal[i];
+    }
+    bands[0] /= 3;
+
+    for (int i = 5; i <= 128; i++) {
+      bands[1] += vReal[i];
+    }
+    bands[1] /= 123;
+
+    for (int i = 129; i < SAMPLES / 2; i++) {
+      bands[2] += vReal[i];
+    }
+    bands[2] /= 383;
+
+    double max = 0;
+    //for (int i = 0; i < 3; i++) if (bands[i] > max) max = bands[i];
+    //for (int i = 0; i < 3; i++) bands[i] = bands[i] / max;
+
+    Serial.print(bands[0]);
+    Serial.print(" ");
+    Serial.print(bands[1]);
+    Serial.print(" ");
+    Serial.print(bands[2]);
+    Serial.println();
+    
+    
   }
 };
