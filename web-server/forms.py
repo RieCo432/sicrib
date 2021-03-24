@@ -1,5 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, DecimalField, IntegerField, BooleanField, RadioField
+from wtforms import SubmitField, DecimalField, IntegerField, BooleanField, RadioField, SelectField
+
+
 # from wtforms.validators import DataRequired
 
 
@@ -7,7 +9,8 @@ class IndexForm(FlaskForm):
     enabled = BooleanField("enabled")
     brightness = DecimalField("brightness")
     effect = RadioField("effect", choices=["hue_color_span_rainbow", "hue_color_span_cycle",
-                                           "christmas_animation", "static", "rave", "alis_random_equilibrium", "none"])
+                                           "christmas_animation", "static", "rave", "alis_random_equilibrium", "audio",
+                                           "none"])
     submit = SubmitField("Apply")
 
 
@@ -71,5 +74,13 @@ class DoorwayTrackerForm(FlaskForm):
     exit_color_red = IntegerField("exit_color_red")
     exit_color_green = IntegerField("exit_color_green")
     exit_color_blue = IntegerField("exit_color_blue")
+
+    submit = SubmitField("Apply")
+
+
+class AudioForm(FlaskForm):
+    bass_bins = SelectField("Bass bins", choices=[(1, "1"), (2, "2")])
+    middle_bins = SelectField("Middle bins", choices=[(1, "1"), (2, "2"), (4, "4")])
+    high_bins = SelectField("High bins", choices=[(1, "1"), (2, "2"), (4, "4")])
 
     submit = SubmitField("Apply")

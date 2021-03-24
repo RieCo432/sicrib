@@ -1,6 +1,7 @@
 #include <ArduinoJson.h>
 #include "Room.cpp"
 #define HWSerial Serial1
+#define PicoSerial Serial2
 
 DynamicJsonDocument fx_config(2048);
 
@@ -55,10 +56,17 @@ bool include_horizontal = true;
 
 unsigned long start_time = millis();
 int ravecount;
+
+float bins[NUM_BINS];
+
 void setup() {
   HWSerial.setTX(1);
   HWSerial.setRX(0);
   HWSerial.begin(9600);
+
+  PicoSerial.setTX(8);
+  PicoSerial.setRX(7);
+  PicoSerial.begin(115200);
 
   Serial.begin(9600);
 }
@@ -70,6 +78,31 @@ void loop() {
     effect_name =  fx_config["effect"];
 
     Serial.println(effect_name);
+  }
+  if (PicoSerial.available() > 0) {
+    String str = PicoSerial.readStringUntil('\n');
+    char * rec = str.c_str();
+    char * strtokIndex;
+    strtokIndex = strtok(rec, ",");
+    bins[0] = atof(strtokIndex);
+    strtokIndex = strtok(NULL, ",");
+    bins[1] = atof(strtokIndex);
+    strtokIndex = strtok(NULL, ",");
+    bins[2] = atof(strtokIndex);
+    strtokIndex = strtok(NULL, ",");
+    bins[3] = atof(strtokIndex);
+    strtokIndex = strtok(NULL, ",");
+    bins[4] = atof(strtokIndex);
+    strtokIndex = strtok(NULL, ",");
+    bins[5] = atof(strtokIndex);
+    strtokIndex = strtok(NULL, ",");
+    bins[6] = atof(strtokIndex);
+    strtokIndex = strtok(NULL, ",");
+    bins[7] = atof(strtokIndex);
+    strtokIndex = strtok(NULL, ",");
+    bins[8] = atof(strtokIndex);
+    strtokIndex = strtok(NULL, "\n");
+    bins[9] = atof(strtokIndex);    
   }
   if (HWSerial.available() > 0) {
     String received = HWSerial.readStringUntil('\n');
@@ -110,6 +143,8 @@ void loop() {
     start_time = millis();
     HWSerial.flush(); 
   }
+
+  living_room.turn_off();
 
   if (strcmp(effect_name, hue_color_span_rainbow) == 0 && fx_config["enabled"]) {
     
@@ -171,8 +206,12 @@ void loop() {
   } else if (strcmp(effect_name, rave) == 0 && fx_config["enabled"]){
  
   } else if (strcmp(effect_name, audio) == 0 && fx_config["enabled"]){
-    
-    living_room.audio_effect();
+
+    int bass_bins = fx_config["effect_params"]["audio"]["bass_bins"];
+    int middle_bins = fx_config["effect_params"]["audio"]["middle_bins"];
+    int high_bins = fx_config["effect_params"]["audio"]["high_bins"];
+
+    living_room.audio_effect(bins, NUM_BINS, bass_bins, middle_bins, high_bins);
     
   } else if (strcmp(effect_name, none) == 0 || !fx_config["enabled"]){
     living_room.turn_off();

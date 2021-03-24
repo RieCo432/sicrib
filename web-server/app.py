@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
 from flask import Flask, render_template, flash, redirect, url_for, request
-from forms import HueColorSpanForm, DoorwayTrackerForm, IndexForm, StaticForm, RaveForm
+from forms import HueColorSpanForm, DoorwayTrackerForm, IndexForm, StaticForm, RaveForm, AudioForm
 import json
 import os
 
@@ -23,6 +23,11 @@ fx_params = {"hue_color_span": {
                 "blue": 255,
                 "include_horizontal": True,
                 "include_vertical": True
+                },
+             "audio": {
+                 "bassbins": 2,
+                 "middlebins": 4,
+                 "highbins": 4
                 }
              }
 
@@ -126,6 +131,26 @@ def set_static():
         form.include_vertical.data = fx_config["effect_params"]["static"]["include_vertical"]
 
         return render_template("static.html", form=form)
+
+
+@app.route("/setaudio", methods=["GET", "POST"])
+def set_audio():
+    fx_config = get_current_fx_data()
+    form = AudioForm()
+
+    if form.validate_on_submit():
+        flash("Effect params accepted")
+        fx_config["effect_params"]["audio"]["bass_bins"] = int(form.bass_bins.data)
+        fx_config["effect_params"]["audio"]["middle_bins"] = int(form.middle_bins.data)
+        fx_config["effect_params"]["audio"]["high_bins"] = int(form.high_bins.data)
+        set_current_fx_data(fx_config)
+        return redirect(url_for("index"))
+    else:
+        form.bass_bins.data = fx_config["effect_params"]["audio"]["bass_bins"]
+        form.middle_bins.data = fx_config["effect_params"]["audio"]["middle_bins"]
+        form.high_bins.data = fx_config["effect_params"]["audio"]["high_bins"]
+
+        return render_template("audio.html", form=form)
 
 
 @app.route("/setrave", methods=["GET", "POST"])

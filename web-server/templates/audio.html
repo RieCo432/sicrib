@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+     <h1>Set Static</h1>
+     <form action="" method="post" novalidate>
+         {{ form.hidden_tag() }}
+         <p>
+             {{ form.bass_bins.label }}
+             {{ form.bass_bins() }}
+             {% for error in form.bass_bins.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
+         <p>
+              {{ form.middle_bins.label }}
+              {{ form.middle_bins() }}
+              {% for error in form.middle_bins.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
+         <p>
+              {{ form.high_bins.label }}
+              {{ form.high_bins() }}
+              {% for error in form.high_bins.errors %}
+                  <span style="color: red;">[{{ error }}]</span>
+              {% endfor %}
+         </p>
+         <p>{{ form.submit() }}</p>
+     </form>
+{% endblock %}

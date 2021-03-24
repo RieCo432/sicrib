@@ -12,6 +12,8 @@
 #define SHORT_LENGTH    108
 #define LONG_LENGTH     149
 #define SAMPLES 1024
+#define NUM_BINS 10
+
 
 class Room {
 	public:
@@ -33,12 +35,7 @@ class Room {
 
     CRGB leds[NUM_LEDS];
 
-    double vReal[SAMPLES];
-    double vImag[SAMPLES];
-    int dc_offset = analogRead(0);
-
-    arduinoFFT FFT = arduinoFFT(); /* Create FFT object */
-    double samplingFrequency;
+    int bin_peaks[NUM_BINS];
 
     Room() {
       FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
@@ -351,45 +348,251 @@ class Room {
     }
   }
 
-  void audio_effect() {
-    uint32_t x = micros();
-    for (uint16_t i = 0; i < SAMPLES; i++) {
-      vReal[i] = analogRead(0) - dc_offset;
-      vImag[i] = 0.0;
+  void audio_effect(float* bins, int total_bins, int bass_bins, int middle_bins, int high_bins) {
+
+    int final_bins_num = bass_bins + middle_bins + high_bins;
+    float normalized_bins[NUM_BINS];
+    
+    if (bass_bins == 2) {
+      normalized_bins[0] = sigmoid(bins[0]);
+
+      int led_count_0 = normalized_bins[0] * VERTICAL_LENGTH;
+      float hue_per_led = 85 / (VERTICAL_LENGTH / 3);
+      if (led_count_0 >= bin_peaks[0]) bin_peaks[0] = led_count_0; else bin_peaks[0]--;
+      //Serial.println(led_count_0);
+      for (int i = 0; i < led_count_0; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[north_east[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        leds[north_west[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+      }
+      leds[north_east[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(170, 255, 255);
+      leds[north_west[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(170, 255, 255);
+      
+      normalized_bins[1] = sigmoid(bins[1]);
+
+      int led_count_1 = normalized_bins[1] * VERTICAL_LENGTH;
+      if (led_count_1 >= bin_peaks[1]) bin_peaks[1] = led_count_1; else bin_peaks[1]--;
+      for (int i = 0; i < led_count_1; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[south_east[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        leds[south_west[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+      }
+      leds[south_east[VERTICAL_LENGTH - bin_peaks[1]]] = CHSV(170, 255, 255);
+      leds[south_west[VERTICAL_LENGTH - bin_peaks[1]]] = CHSV(170, 255, 255);
+      
+    } else if (bass_bins == 1) {
+      normalized_bins[0] = sigmoid((bins[0] + bins[1]) / 2.0);
+
+      int led_count_0 = normalized_bins[0] * VERTICAL_LENGTH;
+      float hue_per_led = 85 / (VERTICAL_LENGTH / 3);
+      if (led_count_0 >= bin_peaks[0]) bin_peaks[0] = led_count_0; else bin_peaks[0]--;
+      //Serial.println(led_count_0);
+      for (int i = 0; i < led_count_0; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[south_east[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        leds[south_west[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        leds[north_east[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        leds[north_west[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+      }
+      leds[south_east[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(170, 255, 255);
+      leds[south_west[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(170, 255, 255);
+      leds[north_east[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(170, 255, 255);
+      leds[north_west[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(170, 255, 255);
     }
-    samplingFrequency = SAMPLES / ((micros() - x) / 1000000.0);
 
-    FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);  /* Weigh data */
-    FFT.Compute(vReal, vImag, SAMPLES, FFT_FORWARD); /* Compute FFT */
-    FFT.ComplexToMagnitude(vReal, vImag, SAMPLES); /* Compute magnitudes */
+    if (middle_bins == 4) {
+      int avail_leds = LONG_LENGTH / 2;
+      float hue_per_led = 85 / (avail_leds / 3);
+      normalized_bins[2] = sigmoid(bins[2]);
 
-    double bands[3] = {0, 0, 0};
-    for (int i = 1; i <= 4; i++) {
-      bands[0] += vReal[i];
+      int led_count_2 = normalized_bins[2] * avail_leds;
+      if (led_count_2 >= bin_peaks[2]) bin_peaks[2] = led_count_2; else bin_peaks[2]--;
+      for (int i = 0; i < led_count_2; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[south[i]] = CHSV(hue, 255, 255);
+      }
+      leds[south[bin_peaks[2]]] = CHSV(170, 255, 255);
+      
+      normalized_bins[3] = sigmoid(bins[3]);
+
+      int led_count_3 = normalized_bins[3] * avail_leds;
+      if (led_count_3 >= bin_peaks[3]) bin_peaks[3] = led_count_3; else bin_peaks[3]--;
+      for (int i = 0; i < led_count_3; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[south[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+      }
+      leds[south[LONG_LENGTH - 1 - bin_peaks[3]]] = CHSV(170, 255, 255);
+      
+      normalized_bins[4] = sigmoid(bins[4]);
+
+      int led_count_4 = normalized_bins[4] * avail_leds;
+      if (led_count_4 >= bin_peaks[4]) bin_peaks[4] = led_count_4; else bin_peaks[4]--;
+      for (int i = 0; i < led_count_4; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[north[i]] = CHSV(hue, 255, 255);
+      }
+      leds[north[bin_peaks[4]]] = CHSV(170, 255, 255);
+      
+      normalized_bins[5] = sigmoid(bins[5]);
+
+      int led_count_5 = normalized_bins[5] * avail_leds;
+      if (led_count_5 >= bin_peaks[5]) bin_peaks[5] = led_count_5; else bin_peaks[5]--;
+      for (int i = 0; i < led_count_5; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[north[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+      }
+      leds[north[LONG_LENGTH - 1 - bin_peaks[5]]] = CHSV(170, 255, 255);
+      
+    } else if (middle_bins == 2) {
+      normalized_bins[2] = sigmoid((bins[2] + bins[3]) / 2.0);
+      normalized_bins[4] = sigmoid((bins[4] + bins[5]) / 2.0);
+
+
+      int avail_leds = LONG_LENGTH / 2;
+      float hue_per_led = 85 / (avail_leds / 3);
+
+      int led_count_2 = normalized_bins[2] * avail_leds;
+      if (led_count_2 >= bin_peaks[2]) bin_peaks[2] = led_count_2; else bin_peaks[2]--;
+      for (int i = 0; i < led_count_2; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[south[i]] = CHSV(hue, 255, 255);
+        leds[south[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+      }
+      leds[south[bin_peaks[2]]] = CHSV(170, 255, 255);
+      leds[south[LONG_LENGTH - 1 - bin_peaks[2]]] = CHSV(170, 255, 255);
+
+      int led_count_4 = normalized_bins[4] * avail_leds;
+      if (led_count_4 >= bin_peaks[4]) bin_peaks[4] = led_count_4; else bin_peaks[4]--;
+      for (int i = 0; i < led_count_4; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[north[i]] = CHSV(hue, 255, 255);
+        leds[north[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+      }
+      leds[north[bin_peaks[4]]] = CHSV(170, 255, 255);
+      leds[north[LONG_LENGTH - 1 - bin_peaks[4]]] = CHSV(170, 255, 255);
+      
+    } else if (middle_bins == 1) {
+      normalized_bins[2] = sigmoid((bins[2] + bins[3] + bins[4] + bins[5]) / 4.0);
+
+
+      int avail_leds = LONG_LENGTH / 2;
+      float hue_per_led = 85 / (avail_leds / 3);
+
+      int led_count_2 = normalized_bins[2] * avail_leds;
+      if (led_count_2 >= bin_peaks[2]) bin_peaks[2] = led_count_2; else bin_peaks[2]--;
+      for (int i = 0; i < led_count_2; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[south[i]] = CHSV(hue, 255, 255);
+        leds[south[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        leds[north[i]] = CHSV(hue, 255, 255);
+        leds[north[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+      }
+      leds[south[bin_peaks[2]]] = CHSV(170, 255, 255);
+      leds[south[LONG_LENGTH - 1 - bin_peaks[2]]] = CHSV(170, 255, 255);
+      leds[north[bin_peaks[2]]] = CHSV(170, 255, 255);
+      leds[north[LONG_LENGTH - 1 - bin_peaks[2]]] = CHSV(170, 255, 255);
+      
     }
-    bands[0] /= 3;
 
-    for (int i = 5; i <= 128; i++) {
-      bands[1] += vReal[i];
+    if (high_bins == 4) {
+      int avail_leds = SHORT_LENGTH / 2;
+      float hue_per_led = 85 / (avail_leds / 3);
+      
+      normalized_bins[6] = sigmoid(bins[6]);
+
+      int led_count_6 = normalized_bins[6] * avail_leds;
+      if (led_count_6 >= bin_peaks[6]) bin_peaks[6] = led_count_6; else bin_peaks[6]--;
+      for (int i = 0; i < led_count_6; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[east[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+      }
+      leds[east[SHORT_LENGTH - 1 - bin_peaks[6]]] = CHSV(170, 255, 255);
+      
+      normalized_bins[7] = sigmoid(bins[7]);
+
+      int led_count_7 = normalized_bins[7] * avail_leds;
+      if (led_count_7 >= bin_peaks[7]) bin_peaks[7] = led_count_7; else bin_peaks[7]--;
+      for (int i = 0; i < led_count_7; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[east[i]] = CHSV(hue, 255, 255);
+      }
+      leds[east[bin_peaks[7]]] = CHSV(170, 255, 255);
+
+      normalized_bins[8] = sigmoid(bins[8]);
+
+      int led_count_8 = normalized_bins[8] * avail_leds;
+      if (led_count_8 >= bin_peaks[8]) bin_peaks[8] = led_count_8; else bin_peaks[8]--;
+      for (int i = 0; i < led_count_8; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[west[i]] = CHSV(hue, 255, 255);
+      }
+      leds[west[bin_peaks[8]]] = CHSV(170, 255, 255);
+      
+      normalized_bins[9] = sigmoid(bins[9]);
+
+      int led_count_9 = normalized_bins[9] * avail_leds;
+      if (led_count_9 >= bin_peaks[9]) bin_peaks[9] = led_count_9; else bin_peaks[9]--;
+      for (int i = 0; i < led_count_9; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[west[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+      }
+      leds[west[SHORT_LENGTH - 1 - bin_peaks[9]]] = CHSV(170, 255, 255);
+      
+    } else if (high_bins == 2) {
+      int avail_leds = SHORT_LENGTH / 2;
+      float hue_per_led = 85 / (avail_leds / 3);
+      normalized_bins[6] = sigmoid((bins[6] + bins[7]) / 2.0);
+
+      int led_count_6 = normalized_bins[6] * avail_leds;
+      if (led_count_6 >= bin_peaks[6]) bin_peaks[6] = led_count_6; else bin_peaks[6]--;
+      for (int i = 0; i < led_count_6; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[east[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        leds[east[i]] = CHSV(hue, 255, 255);
+      }
+      leds[east[SHORT_LENGTH - 1 - bin_peaks[6]]] = CHSV(170, 255, 255);
+      leds[east[bin_peaks[6]]] = CHSV(170, 255, 255);
+      
+      
+      normalized_bins[8] = sigmoid((bins[8] + bins[9]) / 2.0);
+
+      int led_count_8 = normalized_bins[8] * avail_leds;
+      if (led_count_8 >= bin_peaks[8]) bin_peaks[8] = led_count_8; else bin_peaks[8]--;
+      for (int i = 0; i < led_count_8; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[west[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        leds[west[i]] = CHSV(hue, 255, 255);
+      }
+      leds[west[SHORT_LENGTH - 1 - bin_peaks[8]]] = CHSV(170, 255, 255);
+      leds[west[bin_peaks[8]]] = CHSV(170, 255, 255);
+      
+    } else if (high_bins == 1) {
+      int avail_leds = SHORT_LENGTH / 2;
+      float hue_per_led = 85 / (avail_leds / 3);
+      normalized_bins[6] = sigmoid((bins[6] + bins[7] + bins[7] + bins[8]) / 4.0);
+
+      int led_count_6 = normalized_bins[6] * avail_leds;
+      if (led_count_6 >= bin_peaks[6]) bin_peaks[6] = led_count_6; else bin_peaks[6]--;
+      for (int i = 0; i < led_count_6; i++) {
+        int hue = constrain(i * hue_per_led, 0, 85);
+        leds[east[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        leds[east[i]] = CHSV(hue, 255, 255);
+        leds[west[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        leds[west[i]] = CHSV(hue, 255, 255);
+      }
+      leds[east[SHORT_LENGTH - 1 - bin_peaks[6]]] = CHSV(170, 255, 255);
+      leds[east[bin_peaks[6]]] = CHSV(170, 255, 255);
+      leds[west[SHORT_LENGTH - 1 - bin_peaks[6]]] = CHSV(170, 255, 255);
+      leds[west[bin_peaks[6]]] = CHSV(170, 255, 255);
+      
     }
-    bands[1] /= 123;
 
-    for (int i = 129; i < SAMPLES / 2; i++) {
-      bands[2] += vReal[i];
-    }
-    bands[2] /= 383;
-
-    double max = 0;
-    //for (int i = 0; i < 3; i++) if (bands[i] > max) max = bands[i];
-    //for (int i = 0; i < 3; i++) bands[i] = bands[i] / max;
-
-    Serial.print(bands[0]);
-    Serial.print(" ");
-    Serial.print(bands[1]);
-    Serial.print(" ");
-    Serial.print(bands[2]);
-    Serial.println();
+    
     
     
   }
+
+  float sigmoid(float x) {
+    return 1.0 / (1 + exp(-4*(x-3.5)));
+  };
 };
