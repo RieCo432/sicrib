@@ -358,7 +358,10 @@ class Room {
 
       int led_count_0 = normalized_bins[0] * VERTICAL_LENGTH;
       float hue_per_led = 85 / (VERTICAL_LENGTH / 3);
-      if (led_count_0 >= bin_peaks[0]) bin_peaks[0] = led_count_0; else bin_peaks[0]--;
+      if (led_count_0 >= bin_peaks[0]) bin_peaks[0] = led_count_0; else {
+        led_count_0 = (bin_peaks[0] + led_count_0) / 2;
+        bin_peaks[0]--;
+      }
       //Serial.println(led_count_0);
       for (int i = 0; i < led_count_0; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
@@ -371,7 +374,10 @@ class Room {
       normalized_bins[1] = sigmoid(bins[1]);
 
       int led_count_1 = normalized_bins[1] * VERTICAL_LENGTH;
-      if (led_count_1 >= bin_peaks[1]) bin_peaks[1] = led_count_1; else bin_peaks[1]--;
+      if (led_count_1 >= bin_peaks[1]) bin_peaks[1] = led_count_1; else {
+        led_count_1 = (bin_peaks[1] + led_count_1) / 2;
+        bin_peaks[1]--;
+      }
       for (int i = 0; i < led_count_1; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[south_east[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
@@ -385,7 +391,10 @@ class Room {
 
       int led_count_0 = normalized_bins[0] * VERTICAL_LENGTH;
       float hue_per_led = 85 / (VERTICAL_LENGTH / 3);
-      if (led_count_0 >= bin_peaks[0]) bin_peaks[0] = led_count_0; else bin_peaks[0]--;
+      if (led_count_0 >= bin_peaks[0]) bin_peaks[0] = led_count_0; else {
+        led_count_0 = (bin_peaks[0] + led_count_0) / 2;
+        bin_peaks[0]--;
+      }
       //Serial.println(led_count_0);
       for (int i = 0; i < led_count_0; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
@@ -406,7 +415,10 @@ class Room {
       normalized_bins[2] = sigmoid(bins[2]);
 
       int led_count_2 = normalized_bins[2] * avail_leds;
-      if (led_count_2 >= bin_peaks[2]) bin_peaks[2] = led_count_2; else bin_peaks[2]--;
+      if (led_count_2 >= bin_peaks[2]) bin_peaks[2] = led_count_2; else {
+        led_count_2 = (bin_peaks[2] + led_count_2) / 2;
+        bin_peaks[2]--;
+      }
       for (int i = 0; i < led_count_2; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[south[i]] = CHSV(hue, 255, 255);
@@ -416,7 +428,10 @@ class Room {
       normalized_bins[3] = sigmoid(bins[3]);
 
       int led_count_3 = normalized_bins[3] * avail_leds;
-      if (led_count_3 >= bin_peaks[3]) bin_peaks[3] = led_count_3; else bin_peaks[3]--;
+      if (led_count_3 >= bin_peaks[3]) bin_peaks[3] = led_count_3; else {
+        led_count_3 = (bin_peaks[3] + led_count_3) / 2;
+        bin_peaks[3]--;
+      }
       for (int i = 0; i < led_count_3; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[south[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
@@ -426,7 +441,10 @@ class Room {
       normalized_bins[4] = sigmoid(bins[4]);
 
       int led_count_4 = normalized_bins[4] * avail_leds;
-      if (led_count_4 >= bin_peaks[4]) bin_peaks[4] = led_count_4; else bin_peaks[4]--;
+      if (led_count_4 >= bin_peaks[4]) bin_peaks[4] = led_count_4; else {
+        led_count_4 = (bin_peaks[4] + led_count_4) / 2;
+        bin_peaks[4]--;
+      }
       for (int i = 0; i < led_count_4; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[north[i]] = CHSV(hue, 255, 255);
@@ -436,7 +454,10 @@ class Room {
       normalized_bins[5] = sigmoid(bins[5]);
 
       int led_count_5 = normalized_bins[5] * avail_leds;
-      if (led_count_5 >= bin_peaks[5]) bin_peaks[5] = led_count_5; else bin_peaks[5]--;
+      if (led_count_5 >= bin_peaks[5]) bin_peaks[5] = led_count_5; else {
+        led_count_5 = (bin_peaks[5] + led_count_5) / 2;
+        bin_peaks[5]--;
+      }
       for (int i = 0; i < led_count_5; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[north[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
@@ -452,7 +473,10 @@ class Room {
       float hue_per_led = 85 / (avail_leds / 3);
 
       int led_count_2 = normalized_bins[2] * avail_leds;
-      if (led_count_2 >= bin_peaks[2]) bin_peaks[2] = led_count_2; else bin_peaks[2]--;
+      if (led_count_2 >= bin_peaks[2]) bin_peaks[2] = led_count_2; else {
+        led_count_2 = (bin_peaks[2] + led_count_2) / 2;
+        bin_peaks[2]--;
+      }
       for (int i = 0; i < led_count_2; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[south[i]] = CHSV(hue, 255, 255);
@@ -462,7 +486,10 @@ class Room {
       leds[south[LONG_LENGTH - 1 - bin_peaks[2]]] = CHSV(170, 255, 255);
 
       int led_count_4 = normalized_bins[4] * avail_leds;
-      if (led_count_4 >= bin_peaks[4]) bin_peaks[4] = led_count_4; else bin_peaks[4]--;
+      if (led_count_4 >= bin_peaks[4]) bin_peaks[4] = led_count_4; else {
+        led_count_4 = (bin_peaks[4] + led_count_4) / 2;
+        bin_peaks[4]--;
+      }
       for (int i = 0; i < led_count_4; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[north[i]] = CHSV(hue, 255, 255);
@@ -479,7 +506,10 @@ class Room {
       float hue_per_led = 85 / (avail_leds / 3);
 
       int led_count_2 = normalized_bins[2] * avail_leds;
-      if (led_count_2 >= bin_peaks[2]) bin_peaks[2] = led_count_2; else bin_peaks[2]--;
+      if (led_count_2 >= bin_peaks[2]) bin_peaks[2] = led_count_2; else {
+        led_count_2 = (bin_peaks[2] + led_count_2) / 2;
+        bin_peaks[2]--;
+      }
       for (int i = 0; i < led_count_2; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[south[i]] = CHSV(hue, 255, 255);
@@ -501,7 +531,10 @@ class Room {
       normalized_bins[6] = sigmoid(bins[6]);
 
       int led_count_6 = normalized_bins[6] * avail_leds;
-      if (led_count_6 >= bin_peaks[6]) bin_peaks[6] = led_count_6; else bin_peaks[6]--;
+      if (led_count_6 >= bin_peaks[6]) bin_peaks[6] = led_count_6; else {
+        led_count_6 = (bin_peaks[6] + led_count_6) / 2;
+        bin_peaks[6]--;
+      }
       for (int i = 0; i < led_count_6; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[east[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
@@ -511,7 +544,10 @@ class Room {
       normalized_bins[7] = sigmoid(bins[7]);
 
       int led_count_7 = normalized_bins[7] * avail_leds;
-      if (led_count_7 >= bin_peaks[7]) bin_peaks[7] = led_count_7; else bin_peaks[7]--;
+      if (led_count_7 >= bin_peaks[7]) bin_peaks[7] = led_count_7; else {
+        led_count_7 = (bin_peaks[7] + led_count_7) / 2;
+        bin_peaks[7]--;
+      }
       for (int i = 0; i < led_count_7; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[east[i]] = CHSV(hue, 255, 255);
@@ -521,7 +557,10 @@ class Room {
       normalized_bins[8] = sigmoid(bins[8]);
 
       int led_count_8 = normalized_bins[8] * avail_leds;
-      if (led_count_8 >= bin_peaks[8]) bin_peaks[8] = led_count_8; else bin_peaks[8]--;
+      if (led_count_8 >= bin_peaks[8]) bin_peaks[8] = led_count_8; else {
+        led_count_8 = (bin_peaks[8] + led_count_8) / 2;
+        bin_peaks[8]--;
+      }
       for (int i = 0; i < led_count_8; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[west[i]] = CHSV(hue, 255, 255);
@@ -531,7 +570,10 @@ class Room {
       normalized_bins[9] = sigmoid(bins[9]);
 
       int led_count_9 = normalized_bins[9] * avail_leds;
-      if (led_count_9 >= bin_peaks[9]) bin_peaks[9] = led_count_9; else bin_peaks[9]--;
+      if (led_count_9 >= bin_peaks[9]) bin_peaks[9] = led_count_9; else {
+        led_count_9 = (bin_peaks[9] + led_count_9) / 2;
+        bin_peaks[9]--;
+      }
       for (int i = 0; i < led_count_9; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[west[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
@@ -544,7 +586,10 @@ class Room {
       normalized_bins[6] = sigmoid((bins[6] + bins[7]) / 2.0);
 
       int led_count_6 = normalized_bins[6] * avail_leds;
-      if (led_count_6 >= bin_peaks[6]) bin_peaks[6] = led_count_6; else bin_peaks[6]--;
+      if (led_count_6 >= bin_peaks[6]) bin_peaks[6] = led_count_6; else {
+        led_count_6 = (bin_peaks[6] + led_count_6) / 2;
+        bin_peaks[6]--;
+      }
       for (int i = 0; i < led_count_6; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[east[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
@@ -557,7 +602,10 @@ class Room {
       normalized_bins[8] = sigmoid((bins[8] + bins[9]) / 2.0);
 
       int led_count_8 = normalized_bins[8] * avail_leds;
-      if (led_count_8 >= bin_peaks[8]) bin_peaks[8] = led_count_8; else bin_peaks[8]--;
+      if (led_count_8 >= bin_peaks[8]) bin_peaks[8] = led_count_8; else {
+        led_count_8 = (bin_peaks[8] + led_count_8) / 2;
+        bin_peaks[8]--;
+      }
       for (int i = 0; i < led_count_8; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[west[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
@@ -572,7 +620,10 @@ class Room {
       normalized_bins[6] = sigmoid((bins[6] + bins[7] + bins[7] + bins[8]) / 4.0);
 
       int led_count_6 = normalized_bins[6] * avail_leds;
-      if (led_count_6 >= bin_peaks[6]) bin_peaks[6] = led_count_6; else bin_peaks[6]--;
+      if (led_count_6 >= bin_peaks[6]) bin_peaks[6] = led_count_6; else {
+        led_count_6 = (bin_peaks[6] + led_count_6) / 2;
+        bin_peaks[6]--;
+      }
       for (int i = 0; i < led_count_6; i++) {
         int hue = constrain(i * hue_per_led, 0, 85);
         leds[east[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
@@ -593,6 +644,6 @@ class Room {
   }
 
   float sigmoid(float x) {
-    return 1.0 / (1 + exp(-4*(x-3.5)));
+    return 1.0 / (1 + exp(-160*(x-0.03)));
   };
 };

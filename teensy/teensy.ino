@@ -1,8 +1,13 @@
 #include <ArduinoJson.h>
 #include "Room.cpp"
 #define HWSerial Serial1
-#define PicoSerial Serial2
+#include <Audio.h>
 
+AudioInputAnalog         input;
+AudioAnalyzeFFT1024    fft;
+AudioOutputI2S         audioOutput;        // audio shield: headphones & line-out
+
+AudioConnection patchCord1(input, 0, fft, 0);
 DynamicJsonDocument fx_config(2048);
 
 Room living_room;
@@ -17,6 +22,8 @@ const char* audio = "audio";
 const char* none = "none";
 const char* horizontal = "horizontal";
 const char* vertical = "vertical";
+
+const int myInput = AUDIO_INPUT_LINEIN;
 
 bool enabled = false;
 
@@ -64,9 +71,7 @@ void setup() {
   HWSerial.setRX(0);
   HWSerial.begin(9600);
 
-  PicoSerial.setTX(8);
-  PicoSerial.setRX(7);
-  PicoSerial.begin(115200);
+  AudioMemory(24);
 
   Serial.begin(9600);
 }
@@ -79,30 +84,26 @@ void loop() {
 
     Serial.println(effect_name);
   }
-  if (PicoSerial.available() > 0) {
-    String str = PicoSerial.readStringUntil('\n');
-    char * rec = str.c_str();
-    char * strtokIndex;
-    strtokIndex = strtok(rec, ",");
-    bins[0] = atof(strtokIndex);
-    strtokIndex = strtok(NULL, ",");
-    bins[1] = atof(strtokIndex);
-    strtokIndex = strtok(NULL, ",");
-    bins[2] = atof(strtokIndex);
-    strtokIndex = strtok(NULL, ",");
-    bins[3] = atof(strtokIndex);
-    strtokIndex = strtok(NULL, ",");
-    bins[4] = atof(strtokIndex);
-    strtokIndex = strtok(NULL, ",");
-    bins[5] = atof(strtokIndex);
-    strtokIndex = strtok(NULL, ",");
-    bins[6] = atof(strtokIndex);
-    strtokIndex = strtok(NULL, ",");
-    bins[7] = atof(strtokIndex);
-    strtokIndex = strtok(NULL, ",");
-    bins[8] = atof(strtokIndex);
-    strtokIndex = strtok(NULL, "\n");
-    bins[9] = atof(strtokIndex);    
+  if (fft.available()) {
+    Serial.print(millis()    );
+    Serial.print("FFT: ");
+    bins[0] =  fft.read(2, 3);
+    bins[1] =  fft.read(4, 6);
+    bins[2] =  fft.read(7, 10);
+    bins[3] =  fft.read(11, 15);
+    bins[4] =  fft.read(16, 22);
+    bins[5] =  fft.read(23, 32);
+    bins[6] =  fft.read(33, 46);
+    bins[7] =  fft.read(47, 66);
+    bins[8] = fft.read(67, 93);
+    bins[9] = fft.read(94, 131);
+
+    for(int i = 0; i < 10; i++) {
+      Serial.print(bins[i]);
+      Serial.print("  ");
+    }
+    
+    Serial.println();
   }
   if (HWSerial.available() > 0) {
     String received = HWSerial.readStringUntil('\n');
