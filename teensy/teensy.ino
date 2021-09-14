@@ -91,15 +91,16 @@ void loop() {
     bins[1] =  fft.read(4, 6);
     bins[2] =  fft.read(7, 10);
     bins[3] =  fft.read(11, 15);
-    bins[4] =  fft.read(16, 22);
-    bins[5] =  fft.read(23, 32);
-    bins[6] =  fft.read(33, 46);
-    bins[7] =  fft.read(47, 66);
-    bins[8] = fft.read(67, 93);
-    bins[9] = fft.read(94, 131);
+    bins[4] =  fft.read(16, 22) -0.001;
+    bins[5] =  fft.read(23, 32) - 0.015;
+    bins[6] =  fft.read(33, 46) - 0.018;
+    bins[7] =  fft.read(47, 66) - 0.005;
+    bins[8] = fft.read(67, 93) - 0.003;
+    bins[9] = fft.read(94, 131) - 0.002;
 
     for(int i = 0; i < 10; i++) {
-      Serial.print(bins[i]);
+      if (bins[i] < 0.007) bins[i] = 0.00;
+      Serial.print(1000 * bins[i]);
       Serial.print("  ");
     }
     
