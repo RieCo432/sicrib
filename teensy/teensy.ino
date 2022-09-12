@@ -87,19 +87,19 @@ void loop() {
   if (fft.available()) {
     Serial.print(millis()    );
     Serial.print("FFT: ");
-    bins[0] =  fft.read(2, 3);
-    bins[1] =  fft.read(4, 6);
-    bins[2] =  fft.read(7, 10);
-    bins[3] =  fft.read(11, 15);
-    bins[4] =  fft.read(16, 22) -0.001;
-    bins[5] =  fft.read(23, 32) - 0.015;
-    bins[6] =  fft.read(33, 46) - 0.018;
-    bins[7] =  fft.read(47, 66) - 0.005;
+    bins[0] =  fft.read(2, 3) - 0.001;
+    bins[1] =  fft.read(4, 6) - 0.001;
+    bins[2] =  fft.read(7, 10) - 0.001;
+    bins[3] =  fft.read(11, 15) - 0.001;
+    bins[4] =  fft.read(16, 22) - 0.002;
+    bins[5] =  fft.read(23, 32) - 0.004;
+    bins[6] =  fft.read(33, 46) - 0.004;
+    bins[7] =  fft.read(47, 66) - 0.003;
     bins[8] = fft.read(67, 93) - 0.003;
-    bins[9] = fft.read(94, 131) - 0.002;
+    bins[9] = fft.read(94, 131) - 0.004;
 
     for(int i = 0; i < 10; i++) {
-      if (bins[i] < 0.007) bins[i] = 0.00;
+      // if (bins[i] < 0.007) bins[i] = 0.00;
       Serial.print(1000 * bins[i]);
       Serial.print("  ");
     }
