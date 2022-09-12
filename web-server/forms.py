@@ -88,7 +88,9 @@ class AudioForm(FlaskForm):
     cycling_period = DecimalField("Cycling Period") # , validators=[DataRequired()])
     low_hue_offset = DecimalField("Low Hue Offset")  # , validators=[DataRequired()])
     high_hue_offset = DecimalField("High Hue Offset")  # , validators=[DataRequired()])
-    peak_hue_offset = DecimalField("Peak HuemOffset")  # , validators=[DataRequired()])
+    peak_hue_offset = DecimalField("Peak Hue Offset")  # , validators=[DataRequired()])
+    gradient_bar_length_mode = RadioField("Gradient Bar Length Mode", choices=["Multiplier", "Count"])
+    gradient_bar_length = DecimalField("Gradient Bar Length")  # , validators=[DataRequired()])
     bar_root = RadioField("Direction", choices=["Corner", "Middle"])
     submit = SubmitField("Apply")
 

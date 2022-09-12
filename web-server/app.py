@@ -34,7 +34,9 @@ fx_params = {"hue_color_span": {
                 "cycling_period": 60, 
                 "low_hue_offset": 0, 
                 "high_hue_offset": 120, 
-                "peak_hue_offset": 240, 
+                "peak_hue_offset": 240,
+                "gradient_bar_length_mode": "Multiplier",
+                "gradient_bar_length": 0.333,
                 "bar_root": "Corner"
                 }, 
              }
@@ -159,6 +161,8 @@ def set_audio():
         fx_config["effect_params"]["audio"]["low_hue_offset"] = float(form.low_hue_offset.data)
         fx_config["effect_params"]["audio"]["high_hue_offset"] = float(form.high_hue_offset.data)
         fx_config["effect_params"]["audio"]["peak_hue_offset"] = float(form.peak_hue_offset.data)
+        fx_config["effect_params"]["audio"]["gradient_bar_length_mode"] = str(form.gradient_bar_length_mode.data)
+        fx_config["effect_params"]["audio"]["gradient_bar_length"] = form.gradient_bar_length.data
         fx_config["effect_params"]["audio"]["bar_root"] = form.bar_root.data
         
         
@@ -176,6 +180,8 @@ def set_audio():
         form.low_hue_offset.data = fx_config["effect_params"]["audio"]["low_hue_offset"]
         form.high_hue_offset.data = fx_config["effect_params"]["audio"]["high_hue_offset"]
         form.peak_hue_offset.data = fx_config["effect_params"]["audio"]["peak_hue_offset"]
+        form.gradient_bar_length_mode.data = str(fx_config["effect_params"]["audio"]["gradient_bar_length_mode"])
+        form.gradient_bar_length.data = fx_config["effect_params"]["audio"]["gradient_bar_length"]
         form.bar_root.data = fx_config["effect_params"]["audio"]["bar_root"]
         
         return render_template("audio.html", form=form)

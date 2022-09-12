@@ -73,6 +73,20 @@
                  <span style="color: red;">[{{ error }}]</span>
              {% endfor %}
          </p>
+		 <p>
+             {{ form.gradient_bar_length_mode.label }}
+             {{ form.gradient_bar_length_mode() }}
+             {% for error in form.gradient_bar_length_mode.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
+		 <p>
+             {{ form.gradient_bar_length.label }}
+             {{ form.gradient_bar_length() }}
+             {% for error in form.gradient_bar_length.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
 		 
 		 <p>
              {{ form.bar_root.label }}
