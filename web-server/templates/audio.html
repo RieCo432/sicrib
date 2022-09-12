@@ -24,6 +24,65 @@
                   <span style="color: red;">[{{ error }}]</span>
               {% endfor %}
          </p>
+		 <p>
+             {{ form.show_peaks.label }}
+             {{ form.show_peaks() }}
+             {% for error in form.show_peaks.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
+		 <p>
+             {{ form.starting_base_hue.label }}
+             {{ form.starting_base_hue() }}
+             {% for error in form.starting_base_hue.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
+		 <p>
+             {{ form.ending_base_hue.label }}
+             {{ form.ending_base_hue() }}
+             {% for error in form.ending_base_hue.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
+		 <p>
+             {{ form.cycling_period.label }}
+             {{ form.cycling_period() }}
+             {% for error in form.cycling_period.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
+		 <p>
+             {{ form.low_hue_offset.label }}
+             {{ form.low_hue_offset() }}
+             {% for error in form.low_hue_offset.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
+		 <p>
+             {{ form.high_hue_offset.label }}
+             {{ form.high_hue_offset() }}
+             {% for error in form.high_hue_offset.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
+		 <p>
+             {{ form.peak_hue_offset.label }}
+             {{ form.peak_hue_offset() }}
+             {% for error in form.peak_hue_offset.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
+		 
+		 <p>
+             {{ form.bar_root.label }}
+             {{ form.bar_root() }}
+             {% for error in form.bar_root.errors %}
+                 <span style="color: red;">[{{ error }}]</span>
+             {% endfor %}
+         </p>
+		 
+		 
          <p>{{ form.submit() }}</p>
      </form>
 {% endblock %}

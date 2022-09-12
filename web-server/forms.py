@@ -82,5 +82,14 @@ class AudioForm(FlaskForm):
     bass_bins = SelectField("Bass bins", choices=[(1, "1"), (2, "2")])
     middle_bins = SelectField("Middle bins", choices=[(1, "1"), (2, "2"), (4, "4")])
     high_bins = SelectField("High bins", choices=[(1, "1"), (2, "2"), (4, "4")])
-
+    show_peaks = BooleanField("show_peaks")
+    starting_base_hue = DecimalField("Starting Base Hue")  # , validators=[DataRequired()])
+    ending_base_hue = DecimalField("Ending Base Hue")  # , validators=[DataRequired()])
+    cycling_period = DecimalField("Cycling Period") # , validators=[DataRequired()])
+    low_hue_offset = DecimalField("Low Hue Offset")  # , validators=[DataRequired()])
+    high_hue_offset = DecimalField("High Hue Offset")  # , validators=[DataRequired()])
+    peak_hue_offset = DecimalField("Peak HuemOffset")  # , validators=[DataRequired()])
+    bar_root = RadioField("Direction", choices=["Corner", "Middle"])
     submit = SubmitField("Apply")
+
+    

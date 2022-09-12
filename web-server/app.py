@@ -25,10 +25,18 @@ fx_params = {"hue_color_span": {
                 "include_vertical": True
                 },
              "audio": {
-                 "bassbins": 2,
-                 "middlebins": 4,
-                 "highbins": 4
-                }
+                "bass_bins": 2, 
+                "middle_bins": 1, 
+                "high_bins": 4, 
+                "show_peaks": True, 
+                "starting_base_hue": 0, 
+                "ending_base_hue": 0, 
+                "cycling_period": 60, 
+                "low_hue_offset": 0, 
+                "high_hue_offset": 120, 
+                "peak_hue_offset": 240, 
+                "bar_root": "Corner"
+                }, 
              }
 
 fx_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, "share", "fx_config.json")
@@ -143,13 +151,33 @@ def set_audio():
         fx_config["effect_params"]["audio"]["bass_bins"] = int(form.bass_bins.data)
         fx_config["effect_params"]["audio"]["middle_bins"] = int(form.middle_bins.data)
         fx_config["effect_params"]["audio"]["high_bins"] = int(form.high_bins.data)
+        
+        fx_config["effect_params"]["audio"]["show_peaks"] = bool(form.show_peaks.data)
+        fx_config["effect_params"]["audio"]["starting_base_hue"] = float(form.starting_base_hue.data)
+        fx_config["effect_params"]["audio"]["ending_base_hue"] = float(form.ending_base_hue.data)
+        fx_config["effect_params"]["audio"]["cycling_period"] = float(form.cycling_period.data)
+        fx_config["effect_params"]["audio"]["low_hue_offset"] = float(form.low_hue_offset.data)
+        fx_config["effect_params"]["audio"]["high_hue_offset"] = float(form.high_hue_offset.data)
+        fx_config["effect_params"]["audio"]["peak_hue_offset"] = float(form.peak_hue_offset.data)
+        fx_config["effect_params"]["audio"]["bar_root"] = form.bar_root.data
+        
+        
         set_current_fx_data(fx_config)
         return redirect(url_for("index"))
     else:
         form.bass_bins.data = str(fx_config["effect_params"]["audio"]["bass_bins"])
         form.middle_bins.data = str(fx_config["effect_params"]["audio"]["middle_bins"])
         form.high_bins.data = str(fx_config["effect_params"]["audio"]["high_bins"])
-
+        
+        form.show_peaks.data = fx_config["effect_params"]["audio"]["show_peaks"]
+        form.starting_base_hue.data = fx_config["effect_params"]["audio"]["starting_base_hue"]
+        form.ending_base_hue.data = fx_config["effect_params"]["audio"]["ending_base_hue"]
+        form.cycling_period.data = fx_config["effect_params"]["audio"]["cycling_period"]
+        form.low_hue_offset.data = fx_config["effect_params"]["audio"]["low_hue_offset"]
+        form.high_hue_offset.data = fx_config["effect_params"]["audio"]["high_hue_offset"]
+        form.peak_hue_offset.data = fx_config["effect_params"]["audio"]["peak_hue_offset"]
+        form.bar_root.data = fx_config["effect_params"]["audio"]["bar_root"]
+        
         return render_template("audio.html", form=form)
 
 
@@ -273,4 +301,4 @@ def set_doorway_state():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=80, debug=True)
+    app.run(host="localhost", port=80, debug=True)
