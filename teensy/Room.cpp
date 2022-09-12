@@ -2,7 +2,7 @@
 #include <FastLED.h>
 #include <string>
 #include <math.h>
-#include "arduinoFFT.h"
+// #include "arduinoFFT.h"
 
 #define DATA_PIN 11
 #define CLOCK_PIN 13
@@ -355,23 +355,52 @@ class Room {
     float normalized_bins[NUM_BINS];
 
     float div = 1.3;
+
+
+    // !!! HUE VALUES GIVEN FROM 0-255, NOT 0 - 360!!!
+    // define hue values for low, high and peak parts of the bar
+    int low_hue = 170;
+    int high_hue = 255;
+    int peak_hue = 85;
     
     if (bass_bins == 2) {
+      /*
+       * THIS BLOCK IS CURRENTLY BEING USED TO TEST ALTERNATE COLORS FOR AUDIO EFFECT
+       * ONLY AFFECTS LOWEST BASS BIN
+      */
+      // THESE 3 LINES DONT AFFECT COLOR
       normalized_bins[0] = sigmoid(bins[0]);
-
       led_count[0] = max(normalized_bins[0] * VERTICAL_LENGTH, led_count[0] / div);
-      float hue_per_led = 85 / (VERTICAL_LENGTH / 3);
       if (led_count[0] >= bin_peaks[0]) bin_peaks[0] = led_count[0]; else bin_peaks[0]--;
-      //Serial.println(led_count[0]);
+
+
+      // THIS BLOCK SETS THE MAIN PART OF THE BAR
+      float hue_per_led = (high_hue - low_hue) / (VERTICAL_LENGTH / 3);  // HOW MUCH HUE DISTANCE NEEDS TO BE COVERED? PER LED, IT IS THAT DISTANCE DIVIDED BY A THIRD OF THE NUMBER OF LEDs, TO MAKE THE BAR REACH FINAL HUE BEFORE END OF BAR
+      //Serial.print("HUE PER LED: ");
+      //Serial.println(hue_per_led);
+      //Serial.print("HUES: ");
       for (int i = 0; i < led_count[0]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
+        int hue = low_hue + i * hue_per_led;
+        if (hue > high_hue) hue = high_hue;
+        //Serial.print(hue);
+        //Serial.print(" ");
         leds[north_east[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
         leds[north_west[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
       }
+      //Serial.println();
+
+      // THIS BLOCK IS TO SET THE PEAK DOT
       if (bin_peaks[0] != 0) {
-        leds[north_east[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(170, 255, 255);
-        leds[north_west[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(170, 255, 255);
+        leds[north_east[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(peak_hue, 255, 255);
+        leds[north_west[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(peak_hue, 255, 255);
       }
+
+      /*
+       * BLOCK
+       * END
+       */
+
+      
       
       normalized_bins[1] = sigmoid(bins[1]);
 
@@ -628,6 +657,7 @@ class Room {
   }
 
   float sigmoid(float x) {
-    return 2 * (1.0 / (1 + exp(-70*x)) - 0.5);
+    //return (1.0 / (1 + exp(-40*(x-0.15))));
+    return sqrt((2.0 / (1 + exp(-70 * x*x))) - 1.0);
   };
 };

@@ -3,6 +3,8 @@
 #define HWSerial Serial1
 #include <Audio.h>
 
+#define RX_BUFFER_SIZE 2048
+
 AudioInputAnalog         input;
 AudioAnalyzeFFT1024    fft;
 AudioOutputI2S         audioOutput;        // audio shield: headphones & line-out
@@ -66,7 +68,13 @@ int ravecount;
 
 float bins[NUM_BINS];
 
+char rx_buffer[RX_BUFFER_SIZE] = {'\0'};
+char rx_total[RX_BUFFER_SIZE] = {'\0'};
+int rx_buffer_index = 0;
+
+
 void setup() {
+  
   HWSerial.setTX(1);
   HWSerial.setRX(0);
   HWSerial.begin(9600);
@@ -74,76 +82,86 @@ void setup() {
   AudioMemory(24);
 
   Serial.begin(9600);
+  Serial.println("Setup done!");
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    String received = Serial.readStringUntil('\n');
-    deserializeJson(fx_config, received);
-    effect_name =  fx_config["effect"];
-
-    Serial.println(effect_name);
-  }
+  // delay(100);
+  // Serial.print(".");
+  /*if (Serial.available() > 0) {
+    while (Serial.available() > 0) {
+      rx_buffer[rx_buffer_index] = Serial.read();
+      if (rx_buffer[rx_buffer_index] == '\n') {
+        deserializeJson(fx_config, rx_buffer);
+        effect_name =  fx_config["effect"];
+        Serial.print("Effect: ");
+        Serial.println(effect_name);
+        Serial.println();
+        for (int i = 0; i < RX_BUFFER_SIZE; i++) rx_buffer[i] = '\0'; 
+        rx_buffer_index = 0;
+      } else rx_buffer_index++;
+    }
+  }*/
   if (fft.available()) {
-    Serial.print(millis()    );
-    Serial.print("FFT: ");
+    //Serial.print(millis()    );
+    //Serial.print("FFT: ");
     bins[0] =  fft.read(2, 3);
-    bins[1] =  fft.read(4, 6);
-    bins[2] =  fft.read(7, 10);
-    bins[3] =  fft.read(11, 15);
-    bins[4] =  fft.read(16, 22) -0.001;
-    bins[5] =  fft.read(23, 32) - 0.015;
-    bins[6] =  fft.read(33, 46) - 0.018;
-    bins[7] =  fft.read(47, 66) - 0.005;
+    bins[1] =  fft.read(4, 6) - 0.0005;
+    bins[2] =  fft.read(7, 10) - 0.0005;
+    bins[3] =  fft.read(11, 15) - 0.001;
+    bins[4] =  fft.read(16, 22) - 0.002;
+    bins[5] =  fft.read(23, 32) - 0.01;
+    bins[6] =  fft.read(33, 46) - 0.01;
+    bins[7] =  fft.read(47, 66) - 0.004;
     bins[8] = fft.read(67, 93) - 0.003;
-    bins[9] = fft.read(94, 131) - 0.002;
+    bins[9] = fft.read(94, 131) - 0.004;
 
     for(int i = 0; i < 10; i++) {
-      if (bins[i] < 0.007) bins[i] = 0.00;
-      Serial.print(1000 * bins[i]);
-      Serial.print("  ");
+      if (bins[i] < 0.0012) bins[i] = 0.00;
+      //Serial.print(1000 * bins[i]);
+      //Serial.print("  ");
     }
-    
-    Serial.println();
   }
   if (HWSerial.available() > 0) {
-    String received = HWSerial.readStringUntil('\n');
-    deserializeJson(fx_config, received);
-    effect_name =  fx_config["effect"];
+        while (HWSerial.available() > 0) {
+          rx_buffer[rx_buffer_index] = HWSerial.read();
+          if (rx_buffer[rx_buffer_index] == (byte) '\n') {
+            strcpy(rx_total, rx_buffer);
+            deserializeJson(fx_config, rx_total);
 
-    Serial.println(effect_name);
-    
-    if (strcmp(effect_name, hue_color_span_rainbow) == 0 || strcmp(effect_name, hue_color_span_cycle) == 0) {
-      hue_color_span_direction = fx_config["effect_params"]["hue_color_span"]["direction"];
-      hue_color_span_starting_hue = fx_config["effect_params"]["hue_color_span"]["starting_hue"];
-      hue_color_span_ending_hue = fx_config["effect_params"]["hue_color_span"]["ending_hue"];
-      hue_color_span_period = fx_config["effect_params"]["hue_color_span"]["period"];
-      hue_color_span_compress = fx_config["effect_params"]["hue_color_span"]["compress"];
+            effect_name = fx_config["effect"];
+            
+            for (int i = 0; i < RX_BUFFER_SIZE; i++) rx_buffer[i] = '\0';
+            rx_buffer_index = 0;
+            
+            if (strcmp(effect_name, hue_color_span_rainbow) == 0 || strcmp(effect_name, hue_color_span_cycle) == 0) {
+              hue_color_span_direction = fx_config["effect_params"]["hue_color_span"]["direction"];
+              hue_color_span_starting_hue = fx_config["effect_params"]["hue_color_span"]["starting_hue"];
+              hue_color_span_ending_hue = fx_config["effect_params"]["hue_color_span"]["ending_hue"];
+              hue_color_span_period = fx_config["effect_params"]["hue_color_span"]["period"];
+              hue_color_span_compress = fx_config["effect_params"]["hue_color_span"]["compress"];
       
-      include_vertical = fx_config["effect_params"]["hue_color_span"]["include_vertical"];
-      include_horizontal = fx_config["effect_params"]["hue_color_span"]["include_horizontal"];
+              include_vertical = fx_config["effect_params"]["hue_color_span"]["include_vertical"];
+              include_horizontal = fx_config["effect_params"]["hue_color_span"]["include_horizontal"];
       
-      if (strcmp(effect_name, hue_color_span_rainbow) == 0) {
-        if (strcmp(hue_color_span_direction, vertical) == 0) {
-          living_room.build_list_straight_vertical(include_vertical, include_horizontal);
-        } else {
-          living_room.build_list_circle_horizontal(include_vertical, include_horizontal);
-        }
-      } else {
-        living_room.build_list_single_element(include_vertical, include_horizontal);
+              if (strcmp(effect_name, hue_color_span_rainbow) == 0) {
+                if (strcmp(hue_color_span_direction, vertical) == 0) {
+                  living_room.build_list_straight_vertical(include_vertical, include_horizontal);
+                } else {
+                  living_room.build_list_circle_horizontal(include_vertical, include_horizontal);
+                }
+              } else {
+              living_room.build_list_single_element(include_vertical, include_horizontal);
+              }
+            
+            } else if (strcmp(effect_name, static_color) == 0) {
+              static_red = fx_config["effect_params"]["static"]["red"];
+              static_green = fx_config["effect_params"]["static"]["green"];
+              static_blue = fx_config["effect_params"]["static"]["blue"];
+            }
+          start_time = millis();
+          } else rx_buffer_index++;
       }
-      
-    } else if (strcmp(fx_config["effect"], static_color) == 0) {
-      static_red = fx_config["effect_params"]["static"]["red"];
-      static_green = fx_config["effect_params"]["static"]["green"];
-      static_blue = fx_config["effect_params"]["static"]["blue"];
-    }
-    
-    
-    // HWSerial.println(effect_name);
-    // Serial.println(effect_name);
-    start_time = millis();
-    HWSerial.flush(); 
   }
 
   living_room.turn_off();
