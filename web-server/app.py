@@ -162,8 +162,8 @@ def set_audio():
         fx_config["effect_params"]["audio"]["high_hue_offset"] = float(form.high_hue_offset.data)
         fx_config["effect_params"]["audio"]["peak_hue_offset"] = float(form.peak_hue_offset.data)
         fx_config["effect_params"]["audio"]["gradient_bar_length_mode"] = str(form.gradient_bar_length_mode.data)
-        fx_config["effect_params"]["audio"]["gradient_bar_length"] = form.gradient_bar_length.data
-        fx_config["effect_params"]["audio"]["bar_root"] = form.bar_root.data
+        fx_config["effect_params"]["audio"]["gradient_bar_length"] = float(form.gradient_bar_length.data)
+        fx_config["effect_params"]["audio"]["bar_root"] = str(form.bar_root.data)
         
         
         set_current_fx_data(fx_config)
@@ -307,4 +307,4 @@ def set_doorway_state():
 
 
 if __name__ == "__main__":
-    app.run(host="localhost", port=80, debug=True)
+    app.run(host="0.0.0.0", port=80, debug=True)
