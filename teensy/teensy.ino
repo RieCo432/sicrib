@@ -127,6 +127,7 @@ void loop() {
           rx_buffer[rx_buffer_index] = HWSerial.read();
           if (rx_buffer[rx_buffer_index] == (byte) '\n') {
             strcpy(rx_total, rx_buffer);
+            Serial.println(rx_total);
             deserializeJson(fx_config, rx_total);
 
             effect_name = fx_config["effect"];
@@ -231,10 +232,49 @@ void loop() {
     int middle_bins = fx_config["effect_params"]["audio"]["middle_bins"];
     int high_bins = fx_config["effect_params"]["audio"]["high_bins"];
 
-    living_room.audio_effect(bins, NUM_BINS, bass_bins, middle_bins, high_bins);
+    bool show_peaks = fx_config["effect_params"]["audio"]["show_peaks"];
+    float starting_base_hue = fx_config["effect_params"]["audio"]["starting_base_hue"];
+    float ending_base_hue = fx_config["effect_params"]["audio"]["ending_base_hue"];
+    float cycling_period = fx_config["effect_params"]["audio"]["cycling_period"];
+    float low_hue_offset = fx_config["effect_params"]["audio"]["low_hue_offset"];
+    float high_hue_offset = fx_config["effect_params"]["audio"]["high_hue_offset"];
+    float peak_hue_offset = fx_config["effect_params"]["audio"]["peak_hue_offset"];
+    char gradient_bar_length_mode[16] = {'\0'};
+    strcpy(gradient_bar_length_mode, fx_config["effect_params"]["audio"]["gradient_bar_length_mode"]);
+    float gradient_bar_length = fx_config["effect_params"]["audio"]["gradient_bar_length"];
+    char bar_root[8] = {'\0'};
+    strcpy(bar_root, fx_config["effect_params"]["audio"]["bar_root"]);
+
+    /*Serial.print("peaks: ");
+    Serial.print(show_peaks ? "true" : "false");
+    Serial.print(" starting: ");
+    Serial.print(starting_base_hue);
+    Serial.print(" ending: ");
+    Serial.print(ending_base_hue);
+    Serial.print(" period: ");
+    Serial.print(cycling_period);
+    Serial.print(" low: ");
+    Serial.print(low_hue_offset);
+    Serial.print(" high: ");
+    Serial.print(high_hue_offset);
+    Serial.print(" peak: ");
+    Serial.print(peak_hue_offset);
+    Serial.print(" root: ");
+    Serial.print(bar_root);
+    Serial.println();*/
+
+    /*Serial.print("Mode");
+    Serial.print(gradient_bar_length_mode);
+    Serial.print("Length");
+    Serial.print(gradient_bar_length);
+    Serial.println();*/
+    
+    living_room.audio_effect(bins, NUM_BINS, bass_bins, middle_bins, high_bins, show_peaks, starting_base_hue, ending_base_hue, cycling_period, low_hue_offset, high_hue_offset, peak_hue_offset, gradient_bar_length_mode, gradient_bar_length, bar_root, (float) (millis() - start_time) / 1000.0f);
     
   } else if (strcmp(effect_name, none) == 0 || !fx_config["enabled"]){
     living_room.turn_off();
-  }
+  };
+  float br = fx_config["brightness"];
+  living_room.set_brightness(br);
   living_room.update();
 }
