@@ -374,12 +374,12 @@ class Room {
       if (fmod(abs(hue_diff), 360) == 0) base_hue = fmod((starting_base_hue + hue_shift_per_second * time_elapsed), 360);
       else {
         base_hue = fmod((hue_shift_per_second * time_elapsed), (2 * abs(hue_diff))) + starting_base_hue;
-        if (hue_diff > 0 && base_hue > ending_base_hue) {
+        if ((hue_diff > 0) & (base_hue > ending_base_hue)) {
           float excess = base_hue - ending_base_hue;
           base_hue = ending_base_hue - excess;
-        } else if (hue_diff < 0 && base_hue < ending_base_hue) {
-          float gap = ending_base_hue - base_hue;
-          base_hue = ending_base_hue + gap;
+        } else if ((hue_diff < 0) & (base_hue < ending_base_hue)) {
+          float excess = base_hue - ending_base_hue;
+          base_hue = ending_base_hue - excess;
         }
       }
       float low_hue = base_hue + low_hue_offset;
