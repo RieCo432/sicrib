@@ -47,6 +47,10 @@ class Room {
         leds[i] = CRGB(0, 0, 0);    
       }
     }
+
+    void set_brightness(float br) {
+      FastLED.setBrightness((int) 255 * br);
+    }
     
     void set_all_hue(uint8_t hue) {
       for (int i = 0; i < NUM_LEDS; i++) {
@@ -349,19 +353,40 @@ class Room {
     }
   }
 
-  void audio_effect(float* bins, int total_bins, int bass_bins, int middle_bins, int high_bins) {
+  void audio_effect(float* bins, int total_bins, int bass_bins, int middle_bins, int high_bins, bool show_peaks, float starting_base_hue, float ending_base_hue, float cycling_period, float low_hue_offset, float high_hue_offset, float peak_hue_offset, char* gradient_bar_length_mode, float gradient_bar_length, char* bar_root, float time_elapsed) {
 
     int final_bins_num = bass_bins + middle_bins + high_bins;
     float normalized_bins[NUM_BINS];
 
+    bool corner = strcmp(bar_root, "Corner") == 0;
+
     float div = 1.3;
 
+     // THIS SETS BASE HUE FOR ALL LEDs
+      float hue_diff = ending_base_hue - starting_base_hue;
+      float hue_shift_per_second = 0;
+      if (cycling_period != 0) {
+        hue_shift_per_second = hue_diff / cycling_period;
+      };
+      if (fmod(abs(hue_diff), 360) != 0) {hue_shift_per_second *= 2;};
 
-    // !!! HUE VALUES GIVEN FROM 0-255, NOT 0 - 360!!!
-    // define hue values for low, high and peak parts of the bar
-    int low_hue = 170;
-    int high_hue = 255;
-    int peak_hue = 85;
+      float base_hue;
+      if (fmod(abs(hue_diff), 360) == 0) base_hue = fmod((starting_base_hue + hue_shift_per_second * time_elapsed), 360);
+      else {
+        base_hue = fmod((hue_shift_per_second * time_elapsed), (2 * abs(hue_diff))) + starting_base_hue;
+        if ((hue_diff > 0) & (base_hue > ending_base_hue)) {
+          float excess = base_hue - ending_base_hue;
+          base_hue = ending_base_hue - excess;
+        } else if ((hue_diff < 0) & (base_hue < ending_base_hue)) {
+          float excess = base_hue - ending_base_hue;
+          base_hue = ending_base_hue - excess;
+        }
+      }
+      float low_hue = base_hue + low_hue_offset;
+      float high_hue = base_hue + high_hue_offset;
+      float peak_hue = base_hue + peak_hue_offset;
+
+    
     
     if (bass_bins == 2) {
       /*
@@ -375,24 +400,41 @@ class Room {
 
 
       // THIS BLOCK SETS THE MAIN PART OF THE BAR
-      float hue_per_led = (high_hue - low_hue) / (VERTICAL_LENGTH / 3);  // HOW MUCH HUE DISTANCE NEEDS TO BE COVERED? PER LED, IT IS THAT DISTANCE DIVIDED BY A THIRD OF THE NUMBER OF LEDs, TO MAKE THE BAR REACH FINAL HUE BEFORE END OF BAR
-      //Serial.print("HUE PER LED: ");
-      //Serial.println(hue_per_led);
-      //Serial.print("HUES: ");
+      float gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * VERTICAL_LENGTH;
+      float hue_per_led = (high_hue - low_hue) / gradient_bar_leds;  // HOW MUCH HUE DISTANCE NEEDS TO BE COVERED? PER LED, IT IS THAT DISTANCE DIVIDED BY A THIRD OF THE NUMBER OF LEDs, TO MAKE THE BAR REACH FINAL HUE BEFORE END OF BAR
       for (int i = 0; i < led_count[0]; i++) {
-        int hue = low_hue + i * hue_per_led;
-        if (hue > high_hue) hue = high_hue;
-        //Serial.print(hue);
-        //Serial.print(" ");
-        leds[north_east[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
-        leds[north_west[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int north_east_led_index;
+        int north_west_led_index;
+        if (corner) {
+          north_east_led_index = north_east[VERTICAL_LENGTH - 1 - i];
+          north_west_led_index = north_west[VERTICAL_LENGTH - 1 - i];
+        } else {
+          north_east_led_index = north_east[i];
+          north_west_led_index = north_west[i];
+        }
+        leds[north_east_led_index] = CHSV(final_hue, 255, 255);
+        leds[north_west_led_index] = CHSV(final_hue, 255, 255);
       }
       //Serial.println();
 
       // THIS BLOCK IS TO SET THE PEAK DOT
-      if (bin_peaks[0] != 0) {
-        leds[north_east[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(peak_hue, 255, 255);
-        leds[north_west[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(peak_hue, 255, 255);
+      if (bin_peaks[0] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int north_east_led_index;
+        int north_west_led_index;
+        if (corner) {
+          north_east_led_index = north_east[VERTICAL_LENGTH - bin_peaks[0]];
+          north_west_led_index = north_west[VERTICAL_LENGTH - bin_peaks[0]];
+        } else {
+          north_east_led_index = north_east[bin_peaks[0]];
+          north_west_led_index = north_west[bin_peaks[0]];
+        }
+        leds[north_east_led_index] = CHSV(final_hue, 255, 255);
+        leds[north_west_led_index] = CHSV(final_hue, 255, 255);
       }
 
       /*
@@ -400,41 +442,99 @@ class Room {
        * END
        */
 
-      
-      
+     
       normalized_bins[1] = sigmoid(bins[1]);
 
       led_count[1] = max(normalized_bins[1] * VERTICAL_LENGTH, led_count[1] / div);
       if (led_count[1] >= bin_peaks[1]) bin_peaks[1] = led_count[1]; else bin_peaks[1]--;
+      gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * VERTICAL_LENGTH;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[1]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[south_east[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
-        leds[south_west[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int south_east_led_index;
+        int south_west_led_index;
+        if (corner) {
+          south_east_led_index = south_east[VERTICAL_LENGTH - 1 - i];
+          south_west_led_index = south_west[VERTICAL_LENGTH - 1 - i];
+        } else {
+          south_east_led_index = south_east[i];
+          south_west_led_index = south_west[i];
+        }
+        leds[south_east_led_index] = CHSV(final_hue, 255, 255);
+        leds[south_west_led_index] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[1] != 0) {
-        leds[south_east[VERTICAL_LENGTH - bin_peaks[1]]] = CHSV(170, 255, 255);
-        leds[south_west[VERTICAL_LENGTH - bin_peaks[1]]] = CHSV(170, 255, 255);
+      if (bin_peaks[1] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int south_east_led_index;
+        int south_west_led_index;
+        if (corner) {
+          south_east_led_index = south_east[VERTICAL_LENGTH - bin_peaks[1]];
+          south_west_led_index = south_west[VERTICAL_LENGTH - bin_peaks[1]];
+        } else {
+          south_east_led_index = south_east[bin_peaks[1]];
+          south_west_led_index = south_west[bin_peaks[1]];
+        }
+        leds[south_east_led_index] = CHSV(final_hue, 255, 255);
+        leds[south_west_led_index] = CHSV(final_hue, 255, 255);
       }
       
     } else if (bass_bins == 1) {
       normalized_bins[0] = sigmoid((bins[0] + bins[1]) / 2.0);
 
       led_count[0] = max(normalized_bins[0] * VERTICAL_LENGTH, led_count[0] / div);
-      float hue_per_led = 85 / (VERTICAL_LENGTH / 3);
       if (led_count[0] >= bin_peaks[0]) bin_peaks[0] = led_count[0]; else bin_peaks[0]--;
+      float gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * VERTICAL_LENGTH;
+      float hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       //Serial.println(led_count[0]);
       for (int i = 0; i < led_count[0]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[south_east[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
-        leds[south_west[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
-        leds[north_east[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
-        leds[north_west[VERTICAL_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int north_east_led_index;
+        int north_west_led_index;
+        int south_east_led_index;
+        int south_west_led_index;
+        if (corner) {
+          north_east_led_index = north_east[VERTICAL_LENGTH - 1 - i];
+          north_west_led_index = north_west[VERTICAL_LENGTH - 1 - i];
+          south_east_led_index = south_east[VERTICAL_LENGTH - 1 - i];
+          south_west_led_index = south_west[VERTICAL_LENGTH - 1 - i];
+        } else {
+          north_east_led_index = north_east[i];
+          north_west_led_index = north_west[i];
+          south_east_led_index = south_east[i];
+          south_west_led_index = south_west[i];
+        }
+        leds[north_east_led_index] = CHSV(final_hue, 255, 255);
+        leds[north_west_led_index] = CHSV(final_hue, 255, 255);
+        leds[south_east_led_index] = CHSV(final_hue, 255, 255);
+        leds[south_west_led_index] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[0] != 0) {
-        leds[south_east[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(170, 255, 255);
-        leds[south_west[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(170, 255, 255);
-        leds[north_east[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(170, 255, 255);
-        leds[north_west[VERTICAL_LENGTH - bin_peaks[0]]] = CHSV(170, 255, 255);
+      if (bin_peaks[0] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int north_east_led_index;
+        int north_west_led_index;
+        int south_east_led_index;
+        int south_west_led_index;
+        if (corner) {
+          north_east_led_index = north_east[VERTICAL_LENGTH - bin_peaks[0]];
+          north_west_led_index = north_west[VERTICAL_LENGTH - bin_peaks[0]];
+          south_east_led_index = south_east[VERTICAL_LENGTH - bin_peaks[0]];
+          south_west_led_index = south_west[VERTICAL_LENGTH - bin_peaks[0]];
+        } else {
+          north_east_led_index = north_east[bin_peaks[0]];
+          north_west_led_index = north_west[bin_peaks[0]];
+          south_east_led_index = south_east[bin_peaks[0]];
+          south_west_led_index = south_west[bin_peaks[0]];
+        }
+        leds[north_east_led_index] = CHSV(final_hue, 255, 255);
+        leds[north_west_led_index] = CHSV(final_hue, 255, 255);
+        leds[south_east_led_index] = CHSV(final_hue, 255, 255);
+        leds[south_west_led_index] = CHSV(final_hue, 255, 255);
       }
     }
 
@@ -445,48 +545,120 @@ class Room {
 
       led_count[2] = max(normalized_bins[2] * avail_leds, led_count[2] / div);
       if (led_count[2] >= bin_peaks[2]) bin_peaks[2] = led_count[2]; else bin_peaks[2]--;
+      float gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[2]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[south[i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int south_led_index;
+        if (corner) {
+          south_led_index = south[i];
+        } else {
+          south_led_index = south[avail_leds - 1 - i];
+        }
+        leds[south_led_index] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[2] != 0) {
-        leds[south[bin_peaks[2]]] = CHSV(170, 255, 255);
+      if (bin_peaks[2] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int south_led_index;
+        if (corner) {
+          south_led_index = south[bin_peaks[2]];
+        } else {
+          south_led_index = south[avail_leds - 1 - bin_peaks[2]];
+        }
+        leds[south_led_index] = CHSV(final_hue, 255, 255);
       }
       
       normalized_bins[3] = sigmoid(bins[3]);
 
       led_count[3] = max(normalized_bins[3] * avail_leds, led_count[3] / div);
       if (led_count[3] >= bin_peaks[3]) bin_peaks[3] = led_count[3]; else bin_peaks[3]--;
+      gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[3]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[south[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int south_led_index;
+        if (corner) {
+          south_led_index = south[LONG_LENGTH - 1 - i];
+        } else {
+          south_led_index = south[avail_leds + i];
+        }
+        leds[south_led_index] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[3] != 0) {
-        leds[south[LONG_LENGTH - 1 - bin_peaks[3]]] = CHSV(170, 255, 255);
+      if (bin_peaks[3] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int south_led_index;
+        if (corner) {
+          south_led_index = south[LONG_LENGTH - 1 - bin_peaks[3]];
+        } else {
+          south_led_index = south[avail_leds + bin_peaks[3]];
+        }
+        leds[south_led_index] = CHSV(final_hue, 255, 255);
       }
       
       normalized_bins[4] = sigmoid(bins[4]);
 
       led_count[4] = max(normalized_bins[4] * avail_leds, led_count[4] / div);
       if (led_count[4] >= bin_peaks[4]) bin_peaks[4] = led_count[4]; else bin_peaks[4]--;
+      gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[4]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[north[i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int north_led_index;
+        if (corner) {
+          north_led_index = north[i];
+        } else {
+          north_led_index = north[avail_leds - 1 - i];
+        }
+        leds[north_led_index] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[4] != 0) {
-        leds[north[bin_peaks[4]]] = CHSV(170, 255, 255);
+      if (bin_peaks[4] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int north_led_index;
+        if (corner) {
+          north_led_index = north[bin_peaks[4]];
+        } else {
+          north_led_index = north[avail_leds - 1 - bin_peaks[4]];
+        }
+        leds[north_led_index] = CHSV(final_hue, 255, 255);
       }
       
       normalized_bins[5] = sigmoid(bins[5]);
 
       led_count[5] = max(normalized_bins[5] * avail_leds, led_count[5] / div);
       if (led_count[5] >= bin_peaks[5]) bin_peaks[5] = led_count[5]; else bin_peaks[5]--;
+      gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[5]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[north[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int north_led_index;
+        if (corner) {
+          north_led_index = north[LONG_LENGTH - 1 - i];
+        } else {
+          north_led_index = north[avail_leds + i];
+        }
+        leds[north_led_index] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[5] != 0) {
-        leds[north[LONG_LENGTH - 1 - bin_peaks[5]]] = CHSV(170, 255, 255);
+      if (bin_peaks[5] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int north_led_index;
+        if (corner) {
+          north_led_index = north[LONG_LENGTH - 1 - bin_peaks[5]];
+        } else {
+          north_led_index = north[avail_leds + bin_peaks[5]];
+        }
+        leds[north_led_index] = CHSV(final_hue, 255, 255);
       }
       
     } else if (middle_bins == 2) {
@@ -495,30 +667,77 @@ class Room {
 
 
       int avail_leds = LONG_LENGTH / 2;
-      float hue_per_led = 85 / (avail_leds / 3);
 
       led_count[2] = max(normalized_bins[2] * avail_leds, led_count[2] / div);
       if (led_count[2] >= bin_peaks[2]) bin_peaks[2] = led_count[2]; else bin_peaks[2]--;
+      float gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      float hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[2]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[south[i]] = CHSV(hue, 255, 255);
-        leds[south[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int south_led_index_1;
+        int south_led_index_2;
+        if (corner) {
+          south_led_index_1 = south[i];
+          south_led_index_2 = south[LONG_LENGTH - 1 - i];
+        } else {
+          south_led_index_1 = south[avail_leds - 1 - i];
+          south_led_index_2 = south[avail_leds + i];
+        }
+        leds[south_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[south_led_index_2] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[2] != 0) {
-        leds[south[bin_peaks[2]]] = CHSV(170, 255, 255);
-        leds[south[LONG_LENGTH - 1 - bin_peaks[2]]] = CHSV(170, 255, 255);
+      if (bin_peaks[2] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int south_led_index_1;
+        int south_led_index_2;
+        if (corner) {
+          south_led_index_1 = south[bin_peaks[2]];
+          south_led_index_2 = south[LONG_LENGTH - 1 - bin_peaks[2]];
+        } else {
+          south_led_index_1 = south[avail_leds - 1 - bin_peaks[2]];
+          south_led_index_2 = south[avail_leds + bin_peaks[2]];
+        }
+        leds[south_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[south_led_index_2] = CHSV(final_hue, 255, 255);
       }
       
       led_count[4] = max(normalized_bins[4] * avail_leds, led_count[4] / div);
       if (led_count[4] >= bin_peaks[4]) bin_peaks[4] = led_count[4]; else bin_peaks[4]--;
+      gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[4]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[north[i]] = CHSV(hue, 255, 255);
-        leds[north[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int north_led_index_1;
+        int north_led_index_2;
+        if (corner) {
+          north_led_index_1 = north[i];
+          north_led_index_2 = north[LONG_LENGTH - 1 - i];
+        } else {
+          north_led_index_1 = north[avail_leds - 1 - i];
+          north_led_index_2 = north[avail_leds + i];
+        }
+        leds[north_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[north_led_index_2] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[4] != 0) {
-        leds[north[bin_peaks[4]]] = CHSV(170, 255, 255);
-        leds[north[LONG_LENGTH - 1 - bin_peaks[4]]] = CHSV(170, 255, 255);
+      if (bin_peaks[4] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int north_led_index_1;
+        int north_led_index_2;
+        if (corner) {
+          north_led_index_1 = north[bin_peaks[4]];
+          north_led_index_2 = north[LONG_LENGTH - 1 - bin_peaks[4]];
+        } else {
+          north_led_index_1 = north[avail_leds - 1 - bin_peaks[4]];
+          north_led_index_2 = north[avail_leds + bin_peaks[4]];
+        }
+        leds[north_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[north_led_index_2] = CHSV(final_hue, 255, 255);
       }
       
       
@@ -531,18 +750,54 @@ class Room {
 
       led_count[2] = max(normalized_bins[2] * avail_leds, led_count[2] / div);
       if (led_count[2] >= bin_peaks[2]) bin_peaks[2] = led_count[2]; else bin_peaks[2]--;
+      float gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[2]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[south[i]] = CHSV(hue, 255, 255);
-        leds[south[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
-        leds[north[i]] = CHSV(hue, 255, 255);
-        leds[north[LONG_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int north_led_index_1;
+        int north_led_index_2;
+        int south_led_index_1;
+        int south_led_index_2;
+        if (corner) {
+          north_led_index_1 = north[i];
+          north_led_index_2 = north[LONG_LENGTH - 1 - i];
+          south_led_index_1 = south[i];
+          south_led_index_2 = south[LONG_LENGTH - 1 - i];
+        } else {
+          north_led_index_1 = north[avail_leds - 1 - i];
+          north_led_index_2 = north[avail_leds + i];
+          south_led_index_1 = south[avail_leds - 1 - i];
+          south_led_index_2 = south[avail_leds + i];
+        }
+        leds[north_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[north_led_index_2] = CHSV(final_hue, 255, 255);
+        leds[south_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[south_led_index_2] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[2] != 0) {
-        leds[south[bin_peaks[2]]] = CHSV(170, 255, 255);
-        leds[south[LONG_LENGTH - 1 - bin_peaks[2]]] = CHSV(170, 255, 255);
-        leds[north[bin_peaks[2]]] = CHSV(170, 255, 255);
-        leds[north[LONG_LENGTH - 1 - bin_peaks[2]]] = CHSV(170, 255, 255);
+      if (bin_peaks[2] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int north_led_index_1;
+        int north_led_index_2;
+        int south_led_index_1;
+        int south_led_index_2;
+        if (corner) {
+          north_led_index_1 = north[bin_peaks[2]];
+          north_led_index_2 = north[LONG_LENGTH - 1 - bin_peaks[2]];
+          south_led_index_1 = south[bin_peaks[2]];
+          south_led_index_2 = south[LONG_LENGTH - 1 - bin_peaks[2]];
+        } else {
+          north_led_index_1 = north[avail_leds - 1 - bin_peaks[2]];
+          north_led_index_2 = north[avail_leds + bin_peaks[2]];
+          south_led_index_1 = south[avail_leds - 1 - bin_peaks[2]];
+          south_led_index_2 = south[avail_leds + bin_peaks[2]];
+        }
+        leds[north_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[north_led_index_2] = CHSV(final_hue, 255, 255);
+        leds[south_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[south_led_index_2] = CHSV(final_hue, 255, 255);
       }
     }
 
@@ -554,48 +809,120 @@ class Room {
 
       led_count[6] = max(normalized_bins[6] * avail_leds, led_count[6] / div);
       if (led_count[6] >= bin_peaks[6]) bin_peaks[6] = led_count[6]; else bin_peaks[6]--;
+      float gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[6]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[east[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int east_led_index;
+        if (corner) {
+          east_led_index = east[SHORT_LENGTH - 1 - i];
+        } else {
+          east_led_index = east[avail_leds + i];
+        }
+        leds[east_led_index] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[6] != 0) {
-        leds[east[SHORT_LENGTH - 1 - bin_peaks[6]]] = CHSV(170, 255, 255);
+      if (bin_peaks[6] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int east_led_index;
+        if (corner) {
+          east_led_index = east[SHORT_LENGTH - 1 - bin_peaks[6]];
+        } else {
+          east_led_index = east[avail_leds + bin_peaks[6]];
+        }
+        leds[east_led_index] = CHSV(final_hue, 255, 255);
       }
       
       normalized_bins[7] = sigmoid(bins[7]);
 
       led_count[7] = max(normalized_bins[7] * avail_leds, led_count[7] / div);
       if (led_count[7] >= bin_peaks[7]) bin_peaks[7] = led_count[7]; else bin_peaks[7]--;
+      gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[7]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[east[i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int east_led_index;
+        if (corner) {
+          east_led_index = east[i];
+        } else {
+          east_led_index = east[avail_leds - 1 - i];
+        }
+        leds[east_led_index] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[7] != 0) {
-        leds[east[bin_peaks[7]]] = CHSV(170, 255, 255);
+      if (bin_peaks[7] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int east_led_index;
+        if (corner) {
+          east_led_index = east[bin_peaks[7]];
+        } else {
+          east_led_index = east[avail_leds - 1 - bin_peaks[7]];
+        }
+        leds[east_led_index] = CHSV(final_hue, 255, 255);
       }
 
       normalized_bins[8] = sigmoid(bins[8]);
 
       led_count[8] = max(normalized_bins[8] * avail_leds, led_count[8] / div);
       if (led_count[8] >= bin_peaks[8]) bin_peaks[8] = led_count[8]; else bin_peaks[8]--;
+      gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[8]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[west[i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int west_led_index;
+        if (corner) {
+          west_led_index = west[i];
+        } else {
+          west_led_index = west[avail_leds - 1 - i];
+        }
+        leds[west_led_index] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[8] != 0) {
-        leds[west[bin_peaks[8]]] = CHSV(170, 255, 255);
+      if (bin_peaks[8] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int west_led_index;
+        if (corner) {
+          west_led_index = west[bin_peaks[8]];
+        } else {
+          west_led_index = west[avail_leds - 1 - bin_peaks[8]];
+        }
+        leds[west_led_index] = CHSV(final_hue, 255, 255);
       }
       
       normalized_bins[9] = sigmoid(bins[9]);
 
       led_count[9] = max(normalized_bins[9] * avail_leds, led_count[9] / div);
       if (led_count[9] >= bin_peaks[9]) bin_peaks[9] = led_count[9]; else bin_peaks[9]--;
+      gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[9]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[west[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int west_led_index;
+        if (corner) {
+          west_led_index = west[SHORT_LENGTH - 1 - i];
+        } else {
+          west_led_index = west[avail_leds + i];
+        }
+        leds[west_led_index] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[9] != 0) {
-        leds[west[SHORT_LENGTH - 1 - bin_peaks[9]]] = CHSV(170, 255, 255);
+      if (bin_peaks[9] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int west_led_index;
+        if (corner) {
+          west_led_index = west[SHORT_LENGTH - 1 - bin_peaks[9]];
+        } else {
+          west_led_index = west[avail_leds + bin_peaks[9]];
+        }
+        leds[west_led_index] = CHSV(final_hue, 255, 255);
       }
       
     } else if (high_bins == 2) {
@@ -605,28 +932,76 @@ class Room {
 
       led_count[6] = max(normalized_bins[6] * avail_leds, led_count[6] / div);
       if (led_count[6] >= bin_peaks[6]) bin_peaks[6] = led_count[6]; else bin_peaks[6]--;
+      float gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[6]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[east[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
-        leds[east[i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int east_led_index_1;
+        int east_led_index_2;
+        if (corner) {
+          east_led_index_1 = east[SHORT_LENGTH - 1 - i];
+          east_led_index_2 = east[i];
+        } else {
+          east_led_index_1 = east[avail_leds + i];
+          east_led_index_2 = east[avail_leds - 1 - i];
+        }
+        leds[east_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[east_led_index_2] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[6] != 0) {
-        leds[east[SHORT_LENGTH - 1 - bin_peaks[6]]] = CHSV(170, 255, 255);
-        leds[east[bin_peaks[6]]] = CHSV(170, 255, 255);
+      if (bin_peaks[6] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int east_led_index_1;
+        int east_led_index_2;
+        if (corner) {
+          east_led_index_1 = east[SHORT_LENGTH - 1 - bin_peaks[6]];
+          east_led_index_2 = east[bin_peaks[6]];
+        } else {
+          east_led_index_1 = east[avail_leds + bin_peaks[6]];
+          east_led_index_2 = east[avail_leds - 1 - bin_peaks[6]];
+        }
+        leds[east_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[east_led_index_2] = CHSV(final_hue, 255, 255);
       }
       
       normalized_bins[8] = sigmoid((bins[8] + bins[9]) / 2.0);
 
       led_count[8] = max(normalized_bins[8] * avail_leds, led_count[8] / div);
       if (led_count[8] >= bin_peaks[8]) bin_peaks[8] = led_count[8]; else bin_peaks[8]--;
+      gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[8]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[west[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
-        leds[west[i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int west_led_index_1;
+        int west_led_index_2;
+        if (corner) {
+          west_led_index_1 = west[SHORT_LENGTH - 1 - i];
+          west_led_index_2 = west[i];
+        } else {
+          west_led_index_1 = west[avail_leds + i];
+          west_led_index_2 = west[avail_leds - 1 - i];
+        }
+        leds[west_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[west_led_index_2] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[8] != 0) {
-        leds[west[SHORT_LENGTH - 1 - bin_peaks[8]]] = CHSV(170, 255, 255);
-        leds[west[bin_peaks[8]]] = CHSV(170, 255, 255);
+      if (bin_peaks[8] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int west_led_index_1;
+        int west_led_index_2;
+        if (corner) {
+          west_led_index_1 = west[SHORT_LENGTH - 1 - bin_peaks[8]];
+          west_led_index_2 = west[bin_peaks[8]];
+        } else {
+          west_led_index_1 = west[avail_leds + bin_peaks[8]];
+          west_led_index_2 = west[avail_leds - 1 - bin_peaks[8]];
+        }
+        leds[west_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[west_led_index_2] = CHSV(final_hue, 255, 255);
       }
       
     } else if (high_bins == 1) {
@@ -636,23 +1011,57 @@ class Room {
 
       led_count[6] = max(normalized_bins[6] * avail_leds, led_count[6] / div);
       if (led_count[6] >= bin_peaks[6]) bin_peaks[6] = led_count[6]; else bin_peaks[6]--;
+      float gradient_bar_leds = gradient_bar_length;
+      if (strcmp(gradient_bar_length_mode, "Multiplier") == 0) gradient_bar_leds = gradient_bar_length * avail_leds;
+      hue_per_led = (high_hue - low_hue) / gradient_bar_leds;
       for (int i = 0; i < led_count[6]; i++) {
-        int hue = constrain(i * hue_per_led, 0, 85);
-        leds[east[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
-        leds[east[i]] = CHSV(hue, 255, 255);
-        leds[west[SHORT_LENGTH - 1 - i]] = CHSV(hue, 255, 255);
-        leds[west[i]] = CHSV(hue, 255, 255);
+        float hue = low_hue + i * hue_per_led;
+        if (((high_hue > low_hue) && (hue > high_hue)) || ((high_hue < low_hue) && (hue < high_hue)) ) hue = high_hue;
+        int final_hue = 255.0 * hue / 360.0;
+        int east_led_index_1;
+        int east_led_index_2;
+        int west_led_index_1;
+        int west_led_index_2;
+        if (corner) {
+          east_led_index_1 = east[SHORT_LENGTH - 1 - i];
+          east_led_index_2 = east[i];
+          west_led_index_1 = west[SHORT_LENGTH - 1 - i];
+          west_led_index_2 = west[i];
+        } else {
+          east_led_index_1 = east[avail_leds + i];
+          east_led_index_2 = east[avail_leds - 1 - i];
+          west_led_index_1 = west[avail_leds + i];
+          west_led_index_2 = west[avail_leds - 1 - i];
+          
+        }
+        leds[east_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[east_led_index_2] = CHSV(final_hue, 255, 255);
+        leds[west_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[west_led_index_2] = CHSV(final_hue, 255, 255);
       }
-      if (bin_peaks[6] != 0) {
-        leds[east[SHORT_LENGTH - 1 - bin_peaks[6]]] = CHSV(170, 255, 255);
-        leds[east[bin_peaks[6]]] = CHSV(170, 255, 255);
-        leds[west[SHORT_LENGTH - 1 - bin_peaks[6]]] = CHSV(170, 255, 255);
-        leds[west[bin_peaks[6]]] = CHSV(170, 255, 255);
+      if (bin_peaks[6] != 0 && show_peaks) {
+        int final_hue = 255 * peak_hue / 360;
+        int east_led_index_1;
+        int east_led_index_2;
+        int west_led_index_1;
+        int west_led_index_2;
+        if (corner) {
+          east_led_index_1 = east[SHORT_LENGTH - 1 - bin_peaks[6]];
+          east_led_index_2 = east[bin_peaks[6]];
+          west_led_index_1 = west[SHORT_LENGTH - 1 - bin_peaks[6]];
+          west_led_index_2 = west[bin_peaks[6]];
+        } else {
+          east_led_index_1 = east[avail_leds + bin_peaks[6]];
+          east_led_index_2 = east[avail_leds - 1 - bin_peaks[6]];
+          west_led_index_1 = west[avail_leds + bin_peaks[6]];
+          west_led_index_2 = west[avail_leds - 1 - bin_peaks[6]];
+        }
+        leds[east_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[east_led_index_2] = CHSV(final_hue, 255, 255);
+        leds[west_led_index_1] = CHSV(final_hue, 255, 255);
+        leds[west_led_index_2] = CHSV(final_hue, 255, 255);
       }
     }
-
-    
-    
     
   }
 
