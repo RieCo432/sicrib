@@ -24,7 +24,8 @@ if not connected:
 def load_fx_config():
     while True:
         try:
-            return json.load(open(fx_config_path, "r"))
+            with open(fx_config_path, "r") as fin:
+                return json.load(fin)
         except ValueError:
             pass
 
@@ -34,7 +35,9 @@ while True:
     fx_config = load_fx_config()
     if fx_config != old_fx_config or old_fx_config is None:
         old_fx_config = fx_config
-        ser.write(json.dumps(fx_config).encode('utf-8'))
+        line = (json.dumps(fx_config) + "\n").encode('utf-8')
+        ser.write(line)
+        print("written:", line)
         if ser.in_waiting: 
             line = ser.readline().decode('utf-8').rstrip()
             print(line)
